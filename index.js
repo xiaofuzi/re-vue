@@ -1,3 +1,3 @@
-if ('2' == 2) {
-    console.log('true');
-}
+import TinyVue from './src/main.js';
+
+window.TinyVue = TinyVue;

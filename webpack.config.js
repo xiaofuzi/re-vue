@@ -1,7 +1,7 @@
 module.exports = {
     devtool: 'source-map',
     entry: {
-        app: './index.js'
+        tinyVue: './index.js'
     },
     output: {
         path: './dist',
@@ -11,8 +11,8 @@ module.exports = {
         preLoaders: [
             {
                 test: /\.js$/,
-                exclude: /node_modules/,
-                loader: "jshint-loader"
+                loader: "eslint-loader",
+                exclude: /node_modules/
             }
         ],
         loaders: [

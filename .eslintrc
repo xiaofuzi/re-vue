@@ -1,0 +1,17 @@
+{
+  "env": {
+    "browser": true,
+    "es6":true
+  },
+  "parserOptions": {
+    "ecmaVersion": 6,
+    "sourceType": "module"
+  },
+  "rules": {
+    "camelcase": 2,
+    "curly": 2,
+    "brace-style": [2, "1tbs"],
+    "quotes": [2, "single"],
+    "semi": [2, "always"]
+  }
+}
