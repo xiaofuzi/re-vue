@@ -6,14 +6,16 @@ export default {
     /**
      * 对应于 v-text 指令
      */
-    text: function (el, value) {
-        el.textContent = value || '';
+    text: function (value) {
+        this.el.textContent = value || '';
     },
     /**
      * 对应于 v-model 指令
      */
-    model: function (el, value, dirAgr, dir, vm, key) {
-        let eventName = 'keyup';
+    model: function (value) {
+        let eventName = 'keyup',
+            el = this.el,
+            self = this;
         el.value = value || '';
 
         /**
@@ -26,18 +28,21 @@ export default {
         }
 
         el.handlers[eventName] = function (e) {
-            vm[key] = e.target.value;
+            self[key] = e.target.value;
         };
 
         el.addEventListener(eventName, el.handlers[eventName]);
     },
     on: {
-        update: function (el, handler, eventName, directive) {
-            if (!directive.handlers) {
-                directive.handlers = {};
+        update: function (handler) {
+            let eventName = this.arg,
+                el = this.el;
+
+            if (!this.handlers) {
+                this.handlers = {};
             }
 
-            var handlers = directive.handlers;
+            var handlers = this.handlers;
 
             if (handlers[eventName]) {
                 //绑定新的事件前移除原绑定的事件函数
