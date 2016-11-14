@@ -1,4 +1,7 @@
-import Directive from './directive.js';
+import ViewModel from './viewModel.js';
+
+import Config from './config.js';
+const { prefix } = Config;
 
 import { 
     extend,
@@ -16,11 +19,9 @@ export default class TinyVue {
     constructor (opts={}) {
         /**
          * this.$el:  根节点
-         * this.$els: 指令节点
          * _bindings: 指令与data关联的桥梁
          */
         this.$el = document.getElementById(opts.el);
-        this.$els = this.$el.querySelectorAll(Directive.selectors());
         
         /**
          * @private
@@ -41,8 +42,7 @@ export default class TinyVue {
         /**
          * 指令处理
          */
-        forEach(this.$els, this._compile.bind(this));
-        this._compile(this.$el);
+        this._compileNode(this.$el);
 
         /**
          * vm响应式数据的初始化
@@ -65,27 +65,42 @@ export default class TinyVue {
     /**
      * @private
      */
-    _compile (el) {
+    _compileNode (el) {
         let self = this;
-        getAttributes(el.attributes).forEach(function (attr) {
-            let directive = Directive.parse(attr);
-            if (directive) {
-                self._bind(el, directive);
-            }
-        });
+
+        if (el.nodeType === 3) {
+            self._compileTextNode(el);
+        } else if (el.attributes && el.attributes.length) {
+            getAttributes(el.attributes).forEach(function (attr) {
+                let vm = ViewModel.parse(attr.name, attr.value);
+                if (vm) {
+                    self._bind(el, vm);
+                }
+            });
+        }
+
+        if (el.childNodes.length) {
+            forEach(el.childNodes, function (child) {
+                self._compileNode(child);
+            });
+        }
+    }
+
+    _compileTextNode (el) {
+        return el;
     }
 
     /**
      * bind directive
      */
-    _bind (el, directive) {
-        el.removeAttribute(directive.attr.name);
-        directive.el = el;
+    _bind (el, vm) {
+        el.removeAttribute(prefix + '-' + vm.directiveName);
+        vm.el = el;
 
-        let key = directive.key,
+        let key = vm.key,
             binding = this._bindings[key] || this._createBinding(key);
 
-        binding.directives.push(directive);
+        binding.directives.push(vm);
     } 
 
     _createBinding (key) {

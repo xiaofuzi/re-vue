@@ -55,5 +55,8 @@ export default {
                 handlers[eventName] = handler;
             }
         }
+    },
+    each: {
+        
     }
 };
