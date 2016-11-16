@@ -1,8 +1,8 @@
 {
-  "name": "re-vue",
-  "version": "0.0.1",
+  "name": "tiny-vue",
+  "version": "0.0.2",
   "description": "rewrite vue.js",
-  "main": "index.js",
+  "main": "./dist/tinyVue.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "webpack",
@@ -24,6 +24,14 @@
     "vue",
     "revue"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/xiaofuzi/re-vue"
+  },
+  "bugs": {
+    "url": "https://github.com/xiaofuzi/re-vue/issues"
+  },
+  "homepage": "https://github.com/xiaofuzi/deep-in-vue",
   "author": "yangxiaofu",
   "license": "ISC"
 }
