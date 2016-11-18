@@ -1,4 +1,5 @@
-import ViewModel from './viewModel.js';
+import Binding from './binding.js';
+import { DirectiveParser } from './parser.js';
 
 import Config from './config.js';
 const { prefix } = Config;
@@ -8,8 +9,6 @@ import {
     forEach,
     map
 } from './utils.js';
-
- 
 
 
 /**
@@ -21,7 +20,7 @@ export default class TinyVue {
          * this.$el:  根节点
          * _bindings: 指令与data关联的桥梁
          */
-        this.$el = document.getElementById(opts.el);
+        this.$el = typeof opts.el === 'string' ? document.querySelector(opts.el) : opts.el;
         
         /**
          * @private
@@ -49,7 +48,7 @@ export default class TinyVue {
          */
         let _data = extend(this._opts.data, this._opts.methods);
         for (let key in this._bindings) {
-            this[key] = _data[key];
+            this.$set(key, _data.$get(key));
         }
     }
 
@@ -72,9 +71,9 @@ export default class TinyVue {
             self._compileTextNode(el);
         } else if (el.attributes && el.attributes.length) {
             getAttributes(el.attributes).forEach(function (attr) {
-                let vm = ViewModel.parse(attr.name, attr.value);
-                if (vm) {
-                    self._bind(el, vm);
+                let directive = DirectiveParser.parse(attr.name, attr.value);
+                if (directive) {
+                    self._bind(el, directive);
                 }
             });
         }
@@ -93,39 +92,19 @@ export default class TinyVue {
     /**
      * bind directive
      */
-    _bind (el, vm) {
-        el.removeAttribute(prefix + '-' + vm.directiveName);
-        vm.el = el;
+    _bind (el, directive) {
+        el.removeAttribute(prefix + '-' + directive.name);
+        directive.el = el;
 
-        let key = vm.key,
+        let key = directive.key,
             binding = this._bindings[key] || this._createBinding(key);
 
-        binding.directives.push(vm);
+        binding.directives.push(directive);
     } 
 
     _createBinding (key) {
-        let binding = {
-            value: '',
-            directives: []
-        };
-
-        this._bindings[key] = binding;
-
-        Object.defineProperty(this, key, {
-            get: function () {
-                return binding.value;
-            },
-            set: function (value) {
-                binding.value = value;
-                binding.directives.forEach(function (directive) {
-                    directive.update(
-                        value
-                    );
-                });
-            }
-        });
-
-        return binding;
+        this._bindings[key] = new Binding(this, key);
+        return this._bindings[key];
     }
 }
 

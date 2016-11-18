@@ -23,18 +23,23 @@
         <input type="text" v-model='counter'>
         <button v-on:click='add' type="button">add</button>
         <p v-text='counter'></p>
+        <p v-text='info.age'></p>
     </div>
     <script src='../dist/tinyVue.js'></script>
     <script>
         var vm = new TinyVue({
-            el: 'app',
+            el: '#app',
             data: {
                 counter: 1,
-                hello: 'ahahah!'
+                hello: 'ahahah!',
+                info: {
+                    age: 18
+                }
             },
             methods: {
                 add: function () {
                     vm.counter += 1;
+                    vm.info.age += 1;
                 }
             },
             ready () {

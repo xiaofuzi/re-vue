@@ -1,8 +1,9 @@
-import Directives from './directives/index.js';
-import Config from './config.js';
+import Directives from '../directives/index.js';
 
+import Config from '../config.js';
 const { prefix } = Config;
-class ViewModel {
+
+export default class DirectiveParser {
     constructor (directiveName, arg, expression) {
         /**
          * v-on:click="onChange"
@@ -11,7 +12,7 @@ class ViewModel {
          */
 
         this.key = expression.trim();
-        this.directiveName = directiveName;
+        this.name = directiveName;
         this.arg = arg;
 
         let directive = Directives[directiveName];
@@ -31,10 +32,8 @@ class ViewModel {
     update (val) {
         this._update(val);
     }
-}
 
-export default {
-    parse (directiveName, expression) {
+    static parse (directiveName, expression) {
         if (directiveName.indexOf(prefix + '-') === -1) { 
             return null; 
         }
@@ -60,7 +59,7 @@ export default {
         }
 
         return directive
-            ? new ViewModel(directiveName, directiveArg, expression)
+            ? new DirectiveParser(directiveName, directiveArg, expression)
             : null;
     }
 };
