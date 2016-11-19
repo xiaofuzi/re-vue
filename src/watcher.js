@@ -6,24 +6,28 @@ import { observer } from './observer.js';
 
 export default class Watcher {
     constructor (binding) {
-        this.binding = binding;
+        binding.watcher = this;
 
+        this.binding = binding;
         this.dependencies = [];
-        this.dependents = [];
     }
 
     getDeps () {
         observer.on('get', (dep)=>{
             this.dependencies.push(dep);
         });
+    }
 
-        this.value = this.binding.value;
+    off () {
         observer.off('get');
     }
 
     watch () {
-        observer.isObserving = true;
-        this.getDeps();
-        observer.isObserving = false;
+        let self = this;
+        this.dependencies.forEach((dep)=>{
+            observer.on(dep.key, ()=>{
+                self.binding.refresh();
+            });
+        });
     }
 }

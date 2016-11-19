@@ -43,14 +43,14 @@
                     height: 170
                 }
             },
-            // computed: {
-            //     wellcome () {
-            //         console.log('wellcome computed');
-            //         return {
-            //             text: this.hello + '---' + this.info.age
-            //         }
-            //     }
-            // },
+            computed: {
+                wellcome () {
+                    console.log('wellcome computed');
+                    return {
+                        text: this.hello + '---' + this.info.age
+                    }
+                }
+            },
             methods: {
                 add: function () {
                     mvvm.counter += 1;
@@ -60,17 +60,19 @@
             watch: {
                 counter (val) {
                     console.log('counter: ', val);
+                    console.log('wellcome: ', this.wellcome);
                 },
                 info (info) {
                     console.log('info: ', info);
+                },
+                wellcome () {
+                    console.log('watcher: ', this.wellcome);
                 }
             },
             ready () {
                 let self = this;
                 self.hello = 'Ready, go!';
-                self.wellcome = {
-                    text: 'hello'
-                }
+                
                 setTimeout(function () {
                     self.hello = 'Done!';
                 }, 3000)

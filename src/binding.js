@@ -4,7 +4,8 @@ import { observer } from './observer.js';
 import {
     objectGet,
     objectSet,
-    isObject
+    isObject,
+    isFunc
 } from './utils.js';
 
 const def = Object.defineProperty;
@@ -18,6 +19,11 @@ export default class Binding {
         this.directives = [];
         this.parent = null;
         this.children = [];
+
+        /**
+         * for computed property
+         */
+        this.watcher = null;
         /**
          * init 
          */
@@ -26,6 +32,11 @@ export default class Binding {
 
 
     defineReactive () {
+        if (this.isComputed) {
+            this.defineComputedProperty();
+            return ;
+        }
+
         let self = this;
         let path = this.key.split('.');
         let len = path.length;
@@ -47,6 +58,7 @@ export default class Binding {
 
         def(obj, key, {
             get () {
+                observer.isObserving && observer.emit('get', self);
                 return self.value;
             },
             set (value) {
@@ -60,8 +72,29 @@ export default class Binding {
                             self.value[prop] = value[prop];
                         } 
                     }
+                    observer.emit(self.key, self);
                     self.refresh();
                 }
+            }
+        });
+    }
+
+    defineComputedProperty () {
+        let key = this.key,
+            obj = this.vm,
+            self = this;
+
+        def(obj, key, {
+            get () {
+                let getter = self.vm._opts.computed[key];
+                if (isFunc(getter)) {
+                    self.value = getter.call(self.vm);
+
+                    return self.value;
+                }
+            },
+            set () {
+                console.warn('computed property is readonly.');
             }
         });
     }

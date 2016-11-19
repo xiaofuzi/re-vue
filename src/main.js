@@ -52,6 +52,37 @@ export default class TinyVue {
         objectEach(_data, (path, item)=>{
             this._initReactive(path, item);
         });
+
+        /**
+         * computed 属性预处理
+         */
+        let _computed = this._opts.computed || {};
+
+        for (let key in _computed) {
+            let computedGetter = _computed[key];
+            if (!isFunc(computedGetter)) {
+                continue;
+            }
+            let binding;
+            if (this._bindings[key]) {
+                console.warn('Can not redefine ' + key + ' property.');
+            } else {
+                let isComputed = true;
+                binding = new Binding(this, key, isComputed);
+                this._bindings[key] = binding;
+            }
+
+            /**
+             * 依赖监测
+             */
+            let watcher = new Watcher(binding);
+            observer.isObserving = true;
+            watcher.getDeps();
+            computedGetter.call(this);
+            observer.isObserving = false;
+            watcher.watch();
+        }
+
         /**
          * 指令处理
          */
@@ -73,20 +104,6 @@ export default class TinyVue {
                 this.$watch(key, cb);
             }
         });
-
-        /**
-         * computed 属性预处理
-         */
-        // let _computed = this._opts.computed || {};
-
-        // for (let key in _computed) {
-        //     if (this._bindings[key]) {
-        //         console.warn('Can not redefine ' + key + ' computed property.');
-        //     } else {
-        //         let isComputed = true;
-        //         let binding = new Binding(this, key, isComputed);
-        //     }
-        // }
     }
 
     //public api
@@ -94,6 +111,13 @@ export default class TinyVue {
         let _binding = this._bindings[key];
         _binding.watch = cb;
     }
+
+    $reactive (obj={}) {
+        objectEach(_data, (path, item)=>{
+            this._initReactive(path, item);
+        });
+    }
+
     /**
      * 生命周期函数
      */
