@@ -56,7 +56,7 @@ export function objectEach (obj={}, cb=()=>{}) {
 
 export function objectMap (obj={}, cb=()=>{}) {
     return Object.keys(obj).map(function (key) {
-        cb(key, obj[key]);
+        return cb(key, obj[key]);
     });
 }
 

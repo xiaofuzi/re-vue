@@ -16,6 +16,8 @@ export default class Binding {
         this.isComputed = isComputed;
 
         this.directives = [];
+        this.parent = null;
+        this.children = [];
         /**
          * init 
          */
@@ -35,55 +37,53 @@ export default class Binding {
             key = this.key;
             self.value = isObj ? objectGet(this.vm, key) : '';
 
-            def(obj, key, {
-                get () {
-                    return self.value;
-                },
-                set (value) {
-                    if (value !== self.value) {
-                        if (!isObj) {
-                            self.value = value;
-                            self.update(value);
-                        } else {
-                            for (let prop in value) {
-                                self.value[prop] = value[prop];
-                            } 
-                        }
-                        observer.emit(self.key, value);
-                    }
-                }
-            });
         } else {
             let lastKey = path.splice(path.length - 1);
             obj = objectGet(this.vm, path.join('.'));
             key = lastKey[0];
     
-            self.value = isObj ? objectGet(this.vm, key) : '';
-
-            def(obj, key, {
-                get () {
-                    return self.value;
-                },
-                set (value) {
-                    if (value !== self.value) {
-                        if (!isObj) {
-                            self.value = value;
-                            self.update(value);
-                        } else {
-                            for (let prop in value) {
-                                self.value[prop] = value[prop];
-                            } 
-                        }
-                        observer.emit(self.key, value);
-                    }
-                }
-            });    
+            self.value = isObj ? objectGet(this.vm, key) : ''; 
         }
+
+        def(obj, key, {
+            get () {
+                return self.value;
+            },
+            set (value) {
+                if (value !== self.value) {
+                    self.oldValue = self.value;
+                    if (!isObj) {
+                        self.value = value;
+                        self.update(value);
+                    } else {
+                        for (let prop in value) {
+                            self.value[prop] = value[prop];
+                        } 
+                    }
+                    self.refresh();
+                }
+            }
+        });
     }
 
     update (value) {
         this.directives.forEach(function (directive) {
             directive.update(value);
         });
+    }
+
+    refresh () {
+        /**
+         * notify parent
+         */
+        if (this.parent) {
+            this.parent.refresh();
+        }
+        
+        this.watch.call(this.vm, this.value, this.oldValue);
+    }
+
+    watch (newVal, oldValue) {
+
     }
 }

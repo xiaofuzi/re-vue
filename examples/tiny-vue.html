@@ -57,6 +57,14 @@
                     mvvm.info.age += 1;
                 }
             },
+            watch: {
+                counter (val) {
+                    console.log('counter: ', val);
+                },
+                info (info) {
+                    console.log('info: ', info);
+                }
+            },
             ready () {
                 let self = this;
                 self.hello = 'Ready, go!';
@@ -72,9 +80,6 @@
 
         //mvvm = new Vue(opts);
         console.log(mvvm);
-        mvvm.$watch('info.age', function () {
-            console.log('info.age: ', this.info.age);
-        })
     </script>
 </body>
 </html>

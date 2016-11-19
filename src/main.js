@@ -65,6 +65,16 @@ export default class TinyVue {
         }
 
         /**
+         * watch 函数注册
+         */
+        let _watches = this._opts.watch || {};
+        objectEach(_watches, (key, cb)=>{
+            if (this._bindings[key]) {
+                this.$watch(key, cb);
+            }
+        });
+
+        /**
          * computed 属性预处理
          */
         // let _computed = this._opts.computed || {};
@@ -81,8 +91,8 @@ export default class TinyVue {
 
     //public api
     $watch (key, cb) {
-        cb = cb || function () {};
-        observer.on(key, cb.bind(this));
+        let _binding = this._bindings[key];
+        _binding.watch = cb;
     }
     /**
      * 生命周期函数
@@ -153,15 +163,19 @@ export default class TinyVue {
         }
 
         if (isObject(value)) {
-            this._createBinding(path);
+            binding = this._createBinding(path);
 
-            objectEach(value, (key, item)=>{            
-                this._initReactive(`${path}.${key}`, item);
+            let bindings = objectMap(value, (key, item)=>{            
+                let childBinding = this._initReactive(`${path}.${key}`, item);
+                childBinding.parent = binding;
+                return childBinding;
             });    
+            binding.children = bindings;
         } else {
-            this._createBinding(path);
+            binding = this._createBinding(path);
         }
-        
+
+        return binding;
     }
 
     $get (path) {
