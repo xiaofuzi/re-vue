@@ -1,4 +1,5 @@
 import Binding from './binding.js';
+import Watcher from './watcher.js';
 import { DirectiveParser } from './parser.js';
 
 import Config from './config.js';
@@ -7,7 +8,13 @@ const { prefix } = Config;
 import { 
     extend,
     forEach,
-    map
+    map,
+    objectEach,
+    objectMap,
+    isObject,
+    isFunc,
+    objectGet,
+    objectSet
 } from './utils.js';
 
 
@@ -27,6 +34,7 @@ export default class TinyVue {
          */
         this._bindings = {};
         this._opts = opts;
+        this._deepPath = '';
 
         this.init();
 
@@ -38,6 +46,11 @@ export default class TinyVue {
      */
     init () {
         let self = this;
+        let _data = extend(this._opts.data, this._opts.methods);
+
+        objectEach(_data, (path, item)=>{
+            this._initReactive(path, item);
+        });
         /**
          * 指令处理
          */
@@ -46,10 +59,23 @@ export default class TinyVue {
         /**
          * vm响应式数据的初始化
          */
-        let _data = extend(this._opts.data, this._opts.methods);
         for (let key in this._bindings) {
-            this.$set(key, _data.$get(key));
+            this.$set(key, objectGet(_data, key));                
         }
+
+        /**
+         * computed 属性预处理
+         */
+        // let _computed = this._opts.computed || {};
+
+        // for (let key in _computed) {
+        //     if (this._bindings[key]) {
+        //         console.warn('Can not redefine ' + key + ' computed property.');
+        //     } else {
+        //         let isComputed = true;
+        //         let binding = new Binding(this, key, isComputed);
+        //     }
+        // }
     }
 
     /**
@@ -97,14 +123,47 @@ export default class TinyVue {
         directive.el = el;
 
         let key = directive.key,
-            binding = this._bindings[key] || this._createBinding(key);
+            binding = this._bindings[key];
 
-        binding.directives.push(directive);
+        if (!binding) {
+            console.error(key + ' is not defined.');
+        } else {
+            binding.directives.push(directive);
+        }
     } 
 
     _createBinding (key) {
         this._bindings[key] = new Binding(this, key);
         return this._bindings[key];
+    }
+
+    /**
+     * init reactive data
+     */
+    _initReactive (path, value) {
+        let binding;
+        if (this._bindings[path]) {
+            return ;
+        }
+
+        if (isObject(value)) {
+            this._createBinding(path);
+
+            objectEach(value, (key, item)=>{            
+                this._initReactive(`${path}.${key}`, item);
+            });    
+        } else {
+            this._createBinding(path);
+        }
+        
+    }
+
+    $get (path) {
+        return objectGet(this, path);
+    }
+
+    $set (path, value) {
+        return objectSet(this, path, value);
     }
 }
 

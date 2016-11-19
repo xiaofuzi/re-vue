@@ -24,33 +24,54 @@
         <button v-on:click='add' type="button">add</button>
         <p v-text='counter'></p>
         <p v-text='info.age'></p>
+        <p v-text='wellcome.text'></p>
     </div>
     <script src='../dist/tinyVue.js'></script>
+    <script src='http://cdn.bootcss.com/vue/1.0.26/vue.js'></script>
     <script>
-        var vm = new TinyVue({
+        var mvvm;
+        var opts = {
             el: '#app',
             data: {
                 counter: 1,
                 hello: 'ahahah!',
                 info: {
                     age: 18
+                },
+                person: {
+                    weight: 20,
+                    height: 170
                 }
             },
+            // computed: {
+            //     wellcome () {
+            //         console.log('wellcome computed');
+            //         return {
+            //             text: this.hello + '---' + this.info.age
+            //         }
+            //     }
+            // },
             methods: {
                 add: function () {
-                    vm.counter += 1;
-                    vm.info.age += 1;
+                    mvvm.counter += 1;
+                    mvvm.info.age += 1;
                 }
             },
             ready () {
                 let self = this;
                 self.hello = 'Ready, go!';
+                self.wellcome = {
+                    text: 'hello'
+                }
                 setTimeout(function () {
                     self.hello = 'Done!';
                 }, 3000)
             }
-        })
-        console.log(vm);
+        }
+        mvvm = new TinyVue(opts);
+
+        //mvvm = new Vue(opts);
+        console.log(mvvm);
     </script>
 </body>
 </html>

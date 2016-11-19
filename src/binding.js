@@ -1,31 +1,39 @@
 import { directiveParser } from './parser.js';
 import { objectEach } from './utils.js';
+import { observer } from './observer.js';
 
 const def = Object.defineProperty;
 
 export default class Binding {
-    constructor (vm, key) {
+    constructor (vm, key, isComputed=false) {
         this.vm = vm;
         this.key = key;
+        this.isComputed = isComputed;
 
         this.directives = [];
-
         /**
          * init 
          */
         let path = key.split('.');
-        this.defineRective(vm, path);
+        this.defineReactive(vm, path);
     }
 
 
-    defineRective (obj, path) {
+    defineReactive (obj, path) {
         let self = this,
         key = path[0];
 
         if (path.length === 1) {
             def(obj, key, {
                 get () {
-                    return self.value;
+                    if (self.isComputed) {
+                        return self.vm._opts.computed[key].call(self.vm);
+                    } else {
+                        if (observer.isObserving) {
+                            observer.emit('get', self);
+                        }
+                        return self.value;
+                    }
                 },
                 set (value) {
                     if (value !== self.value) {
@@ -37,20 +45,9 @@ export default class Binding {
         } else {
             let subObj = obj[key];
             if (!subObj) {
-                subObj = {};
-
-                def(obj, key, {
-                    get () {
-                        return subObj;
-                    },
-                    set (value) {
-                        objectEach(value, (key)=>{
-                            subObj[key] = value[key];
-                        });
-                    }
-                });
+                 subObj = {};
             }
-            self.defineRective(subObj, path.slice(1));
+            self.defineReactive(subObj, path.slice(1));
         }
     }
 

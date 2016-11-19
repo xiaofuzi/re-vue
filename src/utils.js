@@ -1,3 +1,19 @@
+/**
+ * type
+ */
+const toString = Object.prototype.toString;
+export function typeOf (obj) {
+    return toString.call(obj).slice(8, -1);
+}
+
+export function isObject (obj) {
+    return typeOf(obj) === 'Object' ? true : false;
+}
+
+export function isFunc (obj) {
+    return typeOf(obj) === 'Function' ? true : false;
+}
+
 /*******************************************************
  * 数组相关
  */
@@ -47,22 +63,22 @@ export function objectMap (obj={}, cb=()=>{}) {
 /**
  * Object extend
  */
-Object.prototype.$get = function (path='') {
+export function objectGet (obj, path='') {
     path = path.split('.');
     if (path.length == 1) {
-        return this[path[0]];
+        return obj[path[0]];
     } else {
-        this[path[0]] = this[path[0]] || {};
-        return this[path[0]].$get(path.slice(1).join('.'));
+        obj[path[0]] = obj[path[0]] || {};
+        return objectGet(obj[path[0]], path.slice(1).join('.'));
     }
 };
 
-Object.prototype.$set = function (path='', value) {
+export function objectSet (obj, path='', value) {
     path = path.split('.');
     if (path.length == 1) {
-        this[path[0]] = value;
+        obj[path[0]] = value;
     } else {
-        this[path[0]] = this[path[0]] || {};
-        this[path[0]].$set(path.slice(1).join('.'), value);
+        obj[path[0]] = obj[path[0]] || {};
+        objectSet(obj[path[0]], path.slice(1).join('.'), value);
     }
 };

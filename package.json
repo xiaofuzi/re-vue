@@ -1,6 +1,6 @@
 {
   "name": "tiny-vue",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "rewrite vue.js",
   "main": "./dist/tinyVue.js",
   "scripts": {
