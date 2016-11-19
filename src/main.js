@@ -145,16 +145,6 @@ export default class Main {
             setTimeout(()=>{
                 binding.update(binding.value);
             }, 0);
-            /**
-             * 计算属性数据绑定处理，上面只对一级key做了处理，这里需要对子key处理
-             */
-            // function computedPropBinding () {
-            //     self.$watch(key, function (computedObj) {
-            //         objectEach(computedObj, (getterKey, obj)=>{
-
-            //         })
-            //     })
-            // }
         }
     }
 

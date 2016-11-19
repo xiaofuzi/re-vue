@@ -4,6 +4,8 @@ rewrite vue.js.
 
 包含一个比较完整的基本项目，webpack打包、mocha测试、eslint代码校验.
 
+[online demo](http://yangxiaofu.com/re-vue/examples/tiny-vue.html)
+
 ### doc
 
 [doc:https://github.com/xiaofuzi/deep-in-vue](https://github.com/xiaofuzi/deep-in-vue)
@@ -94,16 +96,19 @@ mvvm = new TinyVue(opts);
 ```
 
 * el
+
 Type: `String | Node`
 
 根节点选择器或是根节点dom元素。
 
 * data
+
 Type: `Object`
 
 初始化响应式数据模型
 
 * computed
+
 Type: `Object`
 
 计算属性，每一个元素对应一个函数
@@ -114,15 +119,18 @@ Type: `Object`
     * computed禁止赋值操作
 
 * methods
+
 Type: `Object`
 每一个元素对应一个函数，支持响应式替换
 
 * watch
+
 Type: `Object`
 
 监测对象，监测对应的响应式数据，当数据发生更改时执行回调.
 
 * $watch
+
 Type: `Function`
 监测某一数据的响应式变化
 
@@ -144,6 +152,7 @@ vm.$watch('info.age', function (age) {
 })
 
 * $directive
+
 Type: `Function`
 
 自定义指令
@@ -156,9 +165,11 @@ vm.$directive('text', function (text) {
 ```
 
 * beforeCompiler
+
 生命周期函数，编译前执行
 
 * ready
+
 生命周期函数，渲染完毕后执行
 
 ### Install
