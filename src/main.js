@@ -35,7 +35,7 @@ export default class TinyVue {
          */
         this._bindings = {};
         this._opts = opts;
-        this._deepPath = '';
+        this._dataCopy = {};
 
         this.init();
 
@@ -47,7 +47,7 @@ export default class TinyVue {
      */
     init () {
         let self = this;
-        let _data = extend(this._opts.data, this._opts.methods);
+        let _data = this._dataCopy = extend(this._opts.data, this._opts.methods);
 
         objectEach(_data, (path, item)=>{
             this._initReactive(path, item);

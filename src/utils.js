@@ -65,10 +65,11 @@ export function objectMap (obj={}, cb=()=>{}) {
  */
 export function objectGet (obj, path='') {
     path = path.split('.');
+    
+    obj[path[0]] = obj[path[0]] || {};
     if (path.length == 1) {
         return obj[path[0]];
     } else {
-        obj[path[0]] = obj[path[0]] || {};
         return objectGet(obj[path[0]], path.slice(1).join('.'));
     }
 };

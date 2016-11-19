@@ -72,8 +72,8 @@
 
         //mvvm = new Vue(opts);
         console.log(mvvm);
-        mvvm.$watch('counter', function () {
-            console.log(this.counter);
+        mvvm.$watch('info.age', function () {
+            console.log('info.age: ', this.info.age);
         })
     </script>
 </body>
