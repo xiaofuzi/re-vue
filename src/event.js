@@ -10,11 +10,6 @@ function Event(ctx){
     this._events = {};
 }
 
-/**
- * 当前时间段内触发的事件
- */
-Event.currentEvents = {};
-
 var EventProto = Event.prototype;
 
 /*
@@ -98,11 +93,6 @@ EventProto.emit = function(event){
         args = slice.call(arguments, 1);
         events.forEach((event)=>{
             event.apply(this._ctx, args);
-
-            /**
-             * 事件存储
-             */
-            this.currentEvents[event] = true;
         });
     }
     return this;

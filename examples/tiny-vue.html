@@ -72,6 +72,9 @@
 
         //mvvm = new Vue(opts);
         console.log(mvvm);
+        mvvm.$watch('counter', function () {
+            console.log(this.counter);
+        })
     </script>
 </body>
 </html>

@@ -1,6 +1,7 @@
 import Binding from './binding.js';
 import Watcher from './watcher.js';
 import { DirectiveParser } from './parser.js';
+import { observer } from './observer.js';
 
 import Config from './config.js';
 const { prefix } = Config;
@@ -78,6 +79,11 @@ export default class TinyVue {
         // }
     }
 
+    //public api
+    $watch (key, cb) {
+        cb = cb || function () {};
+        observer.on(key, cb.bind(this));
+    }
     /**
      * 生命周期函数
      */
