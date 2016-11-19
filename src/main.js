@@ -53,35 +53,7 @@ export default class TinyVue {
             this._initReactive(path, item);
         });
 
-        /**
-         * computed 属性预处理
-         */
-        let _computed = this._opts.computed || {};
-
-        for (let key in _computed) {
-            let computedGetter = _computed[key];
-            if (!isFunc(computedGetter)) {
-                continue;
-            }
-            let binding;
-            if (this._bindings[key]) {
-                console.warn('Can not redefine ' + key + ' property.');
-            } else {
-                let isComputed = true;
-                binding = new Binding(this, key, isComputed);
-                this._bindings[key] = binding;
-            }
-
-            /**
-             * 依赖监测
-             */
-            let watcher = new Watcher(binding);
-            observer.isObserving = true;
-            watcher.getDeps();
-            computedGetter.call(this);
-            observer.isObserving = false;
-            watcher.watch();
-        }
+        this._initComputed ();
 
         /**
          * 指令处理
@@ -109,7 +81,7 @@ export default class TinyVue {
     //public api
     $watch (key, cb) {
         let _binding = this._bindings[key];
-        _binding.watch = cb;
+        _binding.watches.push(cb);
     }
 
     $reactive (obj={}) {
@@ -130,6 +102,56 @@ export default class TinyVue {
     /**
      * @private
      */
+    _initComputed () {
+        /**
+         * computed 属性预处理
+         */
+        let _computed = this._opts.computed || {},
+            self = this;
+
+        for (let key in _computed) {
+            let computedGetter = _computed[key];
+            if (!isFunc(computedGetter)) {
+                continue;
+            }
+            let binding;
+            if (this._bindings[key]) {
+                console.warn('Can not redefine ' + key + ' property.');
+            } else {
+                let isComputed = true;
+                binding = new Binding(this, key, isComputed);
+                this._bindings[key] = binding;
+            }
+
+            /**
+             * 计算属性依赖监测
+             */
+            let watcher = new Watcher(binding);
+            observer.isObserving = true;
+            watcher.getDeps();
+            computedGetter.call(this);
+            observer.isObserving = false;
+            watcher.watch();
+
+            /**
+             * 初始化,等待值初始化完毕后在获取计算computed的值
+             */
+            setTimeout(()=>{
+                binding.update(binding.value);
+            }, 0);
+            /**
+             * 计算属性数据绑定处理，上面只对一级key做了处理，这里需要对子key处理
+             */
+            // function computedPropBinding () {
+            //     self.$watch(key, function (computedObj) {
+            //         objectEach(computedObj, (getterKey, obj)=>{
+
+            //         })
+            //     })
+            // }
+        }
+    }
+
     _compileNode (el) {
         let self = this;
 
@@ -166,10 +188,22 @@ export default class TinyVue {
             binding = this._bindings[key];
 
         if (!binding) {
-            console.error(key + ' is not defined.');
-        } else {
-            binding.directives.push(directive);
-        }
+            /**
+             * computed property binding hack
+             * 针对计算属性子属性
+             */
+
+            //get computed property key
+            let computedKey = key.split('.')[0];
+            binding = this._bindings[computedKey];
+            if (binding.isComputed) {
+                binding.directives.push(directive);
+            } else {
+                console.error(key + ' is not defined.');
+            }
+        } 
+        
+        binding.directives.push(directive);
     } 
 
     _createBinding (key) {

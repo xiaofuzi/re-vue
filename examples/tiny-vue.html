@@ -45,10 +45,7 @@
             },
             computed: {
                 wellcome () {
-                    console.log('wellcome computed');
-                    return {
-                        text: this.hello + '---' + this.info.age
-                    }
+                    return {text: this.hello + '---' + this.info.age};
                 }
             },
             methods: {
@@ -75,7 +72,7 @@
                 
                 setTimeout(function () {
                     self.hello = 'Done!';
-                }, 3000)
+                }, 1000)
             }
         }
         mvvm = new TinyVue(opts);

@@ -15,6 +15,7 @@ export default class Binding {
         this.vm = vm;
         this.key = key;
         this.isComputed = isComputed;
+        this.watches = [];
 
         this.directives = [];
         this.parent = null;
@@ -94,18 +95,29 @@ export default class Binding {
                 }
             },
             set () {
-                console.warn('computed property is readonly.');
+                //console.warn('computed property is readonly.');
             }
         });
     }
 
     update (value) {
+        let self = this;
         this.directives.forEach(function (directive) {
-            directive.update(value);
+            /**
+             * 计算属性绑定对应于多个不同key的指令，所以值需要动态获取
+             */
+            if (self.isComputed) {
+                directive.update(objectGet(self.vm, directive.key));
+            } else {
+                directive.update(value);
+            }
         });
     }
 
     refresh () {
+        if (this.isComputed) {
+            this.update(this.vm[this.key]);
+        }
         /**
          * notify parent
          */
@@ -113,10 +125,8 @@ export default class Binding {
             this.parent.refresh();
         }
         
-        this.watch.call(this.vm, this.value, this.oldValue);
-    }
-
-    watch (newVal, oldValue) {
-
+        this.watches.forEach((cb)=>{
+            cb.call(this.vm, this.value, this.oldValue);
+        });
     }
 }

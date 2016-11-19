@@ -6,7 +6,13 @@ rewrite vue.js.
 
 ### doc
 
-[doc](https://github.com/xiaofuzi/deep-in-vue)
+[doc:https://github.com/xiaofuzi/deep-in-vue](https://github.com/xiaofuzi/deep-in-vue)
+
+### 特性
+
+* 双向绑定
+* 计算属性
+* watch监测
 
 ### Install
 
