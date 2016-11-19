@@ -20,9 +20,9 @@ import {
 
 
 /**
- * TinyVue 
+ * Main class 
  */
-export default class TinyVue {
+export default class Main {
     constructor (opts={}) {
         /**
          * this.$el:  根节点
@@ -37,6 +37,7 @@ export default class TinyVue {
         this._opts = opts;
         this._dataCopy = {};
 
+        this.beforeCompiler();
         this.init();
 
         this.ready();
@@ -47,8 +48,7 @@ export default class TinyVue {
      */
     init () {
         let self = this;
-        let _data = this._dataCopy = extend(this._opts.data, this._opts.methods);
-
+        let _data= this._dataCopy = extend(this._opts.data, this._opts.methods);
         objectEach(_data, (path, item)=>{
             this._initReactive(path, item);
         });
@@ -93,6 +93,12 @@ export default class TinyVue {
     /**
      * 生命周期函数
      */
+    beforeCompiler () {
+        if (this._opts.beforeCompiler && typeof this._opts.beforeCompiler == 'function') {
+            this._opts.beforeCompiler.call(this);
+        }
+    }
+     
     ready () {
         if (this._opts.ready && typeof this._opts.ready == 'function') {
             this._opts.ready.call(this);
@@ -161,6 +167,7 @@ export default class TinyVue {
             getAttributes(el.attributes).forEach(function (attr) {
                 let directive = DirectiveParser.parse(attr.name, attr.value);
                 if (directive) {
+                    directive.vm = self;
                     self._bind(el, directive);
                 }
             });

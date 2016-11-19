@@ -36,12 +36,12 @@ export function extend (child, parent) {
     parent = parent || {};
     child = child || {};
 
-    for(var key in parent) {
+    for(let key in parent) {
         if (parent.hasOwnProperty(key)) {
             child[key] = parent[key];
         }
     }
-
+    console.log(child, parent);
     return child;
 }
 
@@ -66,7 +66,10 @@ export function objectMap (obj={}, cb=()=>{}) {
 export function objectGet (obj, path='') {
     path = path.split('.');
     
-    obj[path[0]] = obj[path[0]] || {};
+    if (obj[path[0]] == undefined) {
+        obj[path[0]] =  {};
+    }
+
     if (path.length == 1) {
         return obj[path[0]];
     } else {

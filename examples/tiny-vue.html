@@ -19,9 +19,10 @@
 </head>
 <body>
     <div id="app">
-        <h2 v-text='hello'></h2>
+        <h2 v-text='hello' v-visible='isShow'></h2>
         <input type="text" v-model='counter'>
-        <button v-on:click='add' type="button">add</button>
+        <button v-on:click='add' type="button">add</button>        
+        <button v-on:click='toggle' type="button">toggle</button>
         <p v-text='counter'></p>
         <p v-text='info.age'></p>
         <p v-text='wellcome.text'></p>
@@ -33,6 +34,7 @@
         var opts = {
             el: '#app',
             data: {
+                isShow: false,
                 counter: 1,
                 hello: 'ahahah!',
                 info: {
@@ -50,8 +52,11 @@
             },
             methods: {
                 add: function () {
-                    mvvm.counter += 1;
-                    mvvm.info.age += 1;
+                    this.counter += 1;
+                    this.info.age += 1;
+                },
+                toggle: function () {
+                    this.isShow = !this.isShow;                    
                 }
             },
             watch: {
@@ -75,6 +80,10 @@
                 }, 1000)
             }
         }
+
+        TinyVue.$directive('visible', function (value) {
+            this.el.style.visibility = value ? 'visible' : 'hidden';
+        })
         mvvm = new TinyVue(opts);
 
         //mvvm = new Vue(opts);

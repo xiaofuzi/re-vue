@@ -50,7 +50,7 @@ export default {
             }
             //绑定新的事件函数
             if (handler) {
-                handler = handler.bind(el);
+                handler = handler.bind(this.vm);
                 el.addEventListener(eventName, handler);
                 handlers[eventName] = handler;
             }

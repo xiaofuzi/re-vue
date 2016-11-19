@@ -18,20 +18,17 @@ export default class DirectiveParser {
         let directive = Directives[directiveName];
 
         if (typeof directive === 'function') {
-            this._update = directive;
+            this.update = directive;
         } else {
             for (let prop in directive) {
                 if (prop === 'update') {
-                    this._update = directive.update;
+                    this.update = directive.update;
                 }
                 this[prop] = directive[prop];
             }
         }
     }
 
-    update (val) {
-        this._update(val);
-    }
 
     static parse (directiveName, expression) {
         if (directiveName.indexOf(prefix + '-') === -1) { 
