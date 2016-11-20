@@ -1,4 +1,4 @@
-## re-vue
+## tiny-vue
 
 rewrite vue.js.
 
@@ -6,9 +6,7 @@ rewrite vue.js.
 
 [online demo](http://yangxiaofu.com/re-vue/examples/tiny-vue.html)
 
-### doc
-
-[doc:https://github.com/xiaofuzi/deep-in-vue](https://github.com/xiaofuzi/deep-in-vue)
+[源码分析:https://github.com/xiaofuzi/deep-in-vue](https://github.com/xiaofuzi/deep-in-vue)
 
 ### 特性
 
@@ -150,6 +148,7 @@ vm.$watch('info', function (info) {
 vm.$watch('info.age', function (age) {
     
 })
+```
 
 * $directive
 
