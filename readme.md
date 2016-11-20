@@ -6,7 +6,7 @@ rewrite vue.js.
 
 [online demo](http://yangxiaofu.com/re-vue/examples/tiny-vue.html)
 
-[源码分析:https://github.com/xiaofuzi/deep-in-vue](https://github.com/xiaofuzi/deep-in-vue)
+[实现原理分析:https://github.com/xiaofuzi/deep-in-vue](https://github.com/xiaofuzi/deep-in-vue)
 
 ### 特性
 
@@ -112,9 +112,9 @@ Type: `Object`
 计算属性，每一个元素对应一个函数
 
 注：
-    * computed属性依赖于data中的响应式数据
-    * computed属性可依赖computed属性
-    * computed禁止赋值操作
+    *  computed属性依赖于data中的响应式数据
+    *  computed属性可依赖computed属性
+    *  computed禁止赋值操作
 
 * methods
 
