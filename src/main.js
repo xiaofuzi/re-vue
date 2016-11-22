@@ -29,13 +29,15 @@ export default class Main {
          * _bindings: 指令与data关联的桥梁
          */
         this.$el = typeof opts.el === 'string' ? document.querySelector(opts.el) : opts.el;
-        
+        this.$parent = null;
+        this.$children = [];
+
         /**
          * @private
          */
         this._bindings = {};
         this._opts = opts;
-        this._dataCopy = {};
+        this._reactData = {};
 
         this.beforeCompiler();
         this.init();
@@ -48,7 +50,7 @@ export default class Main {
      */
     init () {
         let self = this;
-        let _data= this._dataCopy = extend(this._opts.data, this._opts.methods);
+        let _data = this._reactData = extend(this._opts.data, this._opts.methods, true);
         objectEach(_data, (path, item)=>{
             this._initReactive(path, item);
         });
@@ -183,6 +185,13 @@ export default class Main {
 
         let key = directive.key,
             binding = this._bindings[key];
+
+        /**
+         * directive hook
+         */
+        if (directive.bind) {
+            directive.bind();
+        }
 
         if (!binding) {
             /**

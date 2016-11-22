@@ -32,17 +32,27 @@ export function map (arr=[], cb) {
 /**
  * 对象继承
  */
-export function extend (child, parent) {
+export function extend (child, parent, isNew=false) {
     parent = parent || {};
     child = child || {};
 
-    for(let key in parent) {
-        if (parent.hasOwnProperty(key)) {
-            child[key] = parent[key];
-        }
+    if (isNew) {
+        let ret = {};
+        objectEach(child, (key, value)=>{
+            ret[key] = value;
+        });
+
+        objectEach(parent, (key, value)=>{
+            ret[key] = value;
+        });
+
+        return ret;
+    } else {
+        objectEach(parent, (key, value)=>{
+            child[key] = value;
+        });
+        return child;
     }
-    console.log(child, parent);
-    return child;
 }
 
 /**

@@ -151,13 +151,15 @@
 	         * _bindings: 指令与data关联的桥梁
 	         */
 	        this.$el = typeof opts.el === 'string' ? document.querySelector(opts.el) : opts.el;
+	        this.$parent = null;
+	        this.$children = [];
 	
 	        /**
 	         * @private
 	         */
 	        this._bindings = {};
 	        this._opts = opts;
-	        this._dataCopy = {};
+	        this._reactData = {};
 	
 	        this.beforeCompiler();
 	        this.init();
@@ -176,7 +178,7 @@
 	            var _this = this;
 	
 	            var self = this;
-	            var _data = this._dataCopy = (0, _utils.extend)(this._opts.data, this._opts.methods);
+	            var _data = this._reactData = (0, _utils.extend)(this._opts.data, this._opts.methods, true);
 	            (0, _utils.objectEach)(_data, function (path, item) {
 	                _this._initReactive(path, item);
 	            });
@@ -290,16 +292,6 @@
 	                setTimeout(function () {
 	                    binding.update(binding.value);
 	                }, 0);
-	                /**
-	                 * 计算属性数据绑定处理，上面只对一级key做了处理，这里需要对子key处理
-	                 */
-	                // function computedPropBinding () {
-	                //     self.$watch(key, function (computedObj) {
-	                //         objectEach(computedObj, (getterKey, obj)=>{
-	
-	                //         })
-	                //     })
-	                // }
 	            };
 	
 	            for (var key in _computed) {
@@ -349,6 +341,13 @@
 	
 	            var key = directive.key,
 	                binding = this._bindings[key];
+	
+	            /**
+	             * directive hook
+	             */
+	            if (directive.bind) {
+	                directive.bind();
+	            }
 	
 	            if (!binding) {
 	                /**
@@ -501,7 +500,7 @@
 	
 	            var obj = void 0,
 	                key = void 0,
-	                isObj = (0, _utils.isObject)((0, _utils.objectGet)(this.vm._dataCopy, this.key));
+	                isObj = (0, _utils.isObject)((0, _utils.objectGet)(this.vm._reactData, this.key));
 	            if (len === 1) {
 	                obj = this.vm;
 	                key = this.key;
@@ -709,13 +708,20 @@
 
 /***/ },
 /* 5 */
-/***/ function(module, exports) {
+/***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
+	
+	var _vIf = __webpack_require__(11);
+	
+	var _vIf2 = _interopRequireDefault(_vIf);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
 	/**
 	 * Directives
 	 */
@@ -774,7 +780,10 @@
 	            }
 	        }
 	    },
-	    each: {}
+	    if: _vIf2.default,
+	    each: {
+	        update: function update(arr) {}
+	    }
 	};
 
 /***/ },
@@ -799,6 +808,9 @@
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
+	
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+	
 	exports.typeOf = typeOf;
 	exports.isObject = isObject;
 	exports.isFunc = isFunc;
@@ -850,16 +862,34 @@
 	 * 对象继承
 	 */
 	function extend(child, parent) {
+	    var isNew = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
+	
 	    parent = parent || {};
 	    child = child || {};
 	
-	    for (var key in parent) {
-	        if (parent.hasOwnProperty(key)) {
-	            child[key] = parent[key];
-	        }
+	    if (isNew) {
+	        var _ret = function () {
+	            var ret = {};
+	            objectEach(child, function (key, value) {
+	                ret[key] = value;
+	            });
+	
+	            objectEach(parent, function (key, value) {
+	                ret[key] = value;
+	            });
+	
+	            return {
+	                v: ret
+	            };
+	        }();
+	
+	        if ((typeof _ret === 'undefined' ? 'undefined' : _typeof(_ret)) === "object") return _ret.v;
+	    } else {
+	        objectEach(parent, function (key, value) {
+	            child[key] = value;
+	        });
+	        return child;
 	    }
-	    console.log(child, parent);
-	    return child;
 	}
 	
 	/**
@@ -1133,6 +1163,67 @@
 	}();
 	
 	exports.default = Watcher;
+
+/***/ },
+/* 11 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	
+	var _main = __webpack_require__(1);
+	
+	var _main2 = _interopRequireDefault(_main);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	/**
+	 * if directive
+	 */
+	exports.default = {
+	    bind: function bind() {
+	        this.parent = this.el.parentNode;
+	        this.startRef = document.createComment('Start of v-if-directive');
+	        this.ref = document.createComment('End of v-if-directive');
+	
+	        var next = this.el.nextSibling;
+	        if (next) {
+	            this.parent.insertBefore(this.startRef, next);
+	            this.parent.insertBefore(this.ref, next);
+	        } else {
+	            this.parent.appendChild(this.startRef);
+	            this.parent.appendChild(this.ref);
+	        }
+	    },
+	    update: function update(value) {
+	        if (value) {
+	            this.createDirectiveInstance();
+	        } else {
+	            this.parent.removeChild(this.el);
+	        }
+	    },
+	    createDirectiveInstance: function createDirectiveInstance() {
+	        if (this.childVm) {
+	            this.childVm = null;
+	        }
+	
+	        var node = this.el,
+	            parentVm = this.vm;
+	        this.parent.insertBefore(node, this.ref);
+	
+	        var childVm = new _main2.default({
+	            el: node
+	        });
+	        /**
+	         * 给 if 指令新建一个vm实例，该实例与父实例共享同一个上下文
+	         */
+	        childVm.__proto__ = parentVm;
+	        this.childVm = childVm;
+	    }
+	};
 
 /***/ }
 /******/ ]);

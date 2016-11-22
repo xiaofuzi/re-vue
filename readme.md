@@ -95,82 +95,96 @@ TinyVue.$directive('visible', function (value) {
 mvvm = new TinyVue(opts);
 ```
 
-* el
+## API 
 
-Type: `String | Node`
+### options
 
-根节点选择器或是根节点dom元素。
+    * el
 
-* data
+    Type: `String | Node`
 
-Type: `Object`
+    根节点选择器或是根节点dom元素。
 
-初始化响应式数据模型
+    * data
 
-* computed
+    Type: `Object`
 
-Type: `Object`
+    初始化响应式数据模型
 
-计算属性，每一个元素对应一个函数
+    * computed
 
-注：
-    * computed属性依赖于data中的响应式数据
-    * computed属性可依赖computed属性
-    * computed禁止赋值操作
+    Type: `Object`
 
-* methods
+    计算属性，每一个元素对应一个函数
 
-Type: `Object`
-每一个元素对应一个函数，支持响应式替换
+    注：
+        * computed属性依赖于data中的响应式数据
+        * computed属性可依赖computed属性
+        * computed禁止赋值操作
 
-* watch
+    * methods
 
-Type: `Object`
+    Type: `Object`
+    每一个元素对应一个函数，支持响应式替换
 
-监测对象，监测对应的响应式数据，当数据发生更改时执行回调.
+    * watch
 
-* $watch
+    Type: `Object`
 
-Type: `Function`
-监测某一数据的响应式变化
+    监测对象，监测对应的响应式数据，当数据发生更改时执行回调.
 
-如：
-```js
-var vm = new TinyVue({
-    data: {
-        info: {
-            age: 18
+### directives
+    * v-text
+    * v-show
+    * v-visible
+    * v-model
+    * v-on
+    * v-if
+
+### vm api
+
+    * $watch
+
+    Type: `Function`
+    监测某一数据的响应式变化
+
+    如：
+    ```js
+    var vm = new TinyVue({
+        data: {
+            info: {
+                age: 18
+            }
         }
-    }
-});
-vm.$watch('info', function (info) {
-    
-});
+    });
+    vm.$watch('info', function (info) {
+        
+    });
 
-vm.$watch('info.age', function (age) {
-    
-})
+    vm.$watch('info.age', function (age) {
+        
+    })
 
-* $directive
+    * $directive
 
-Type: `Function`
+    Type: `Function`
 
-自定义指令
+    自定义指令
 
-如：
-```js
-vm.$directive('text', function (text) {
-    this.el.textContent = text;
-});
-```
+    如：
+    ```js
+    vm.$directive('text', function (text) {
+        this.el.textContent = text;
+    });
+    ```
 
-* beforeCompiler
+    * beforeCompiler
 
-生命周期函数，编译前执行
+    生命周期函数，编译前执行
 
-* ready
+    * ready
 
-生命周期函数，渲染完毕后执行
+    生命周期函数，渲染完毕后执行
 
 ### Install
 

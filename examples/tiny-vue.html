@@ -22,10 +22,12 @@
         <h2 v-text='hello' v-visible='isShow'></h2>
         <input type="text" v-model='counter'>
         <button v-on:click='add' type="button">add</button>        
-        <button v-on:click='toggle' type="button">toggle</button>
-        <p v-text='counter'></p>
-        <p v-text='info.age'></p>
+        <button v-on:click='toggle' type="button">toggle</button> 
         <p v-text='wellcome.text'></p>
+        <div v-if='isShow'>
+            <p v-text='counter'></p>
+            <p v-text='info.age'></p>
+        </div>
     </div>
     <script src='../dist/tinyVue.js'></script>
     <script src='http://cdn.bootcss.com/vue/1.0.26/vue.js'></script>
@@ -87,6 +89,13 @@
 
         //mvvm = new Vue(opts);
         console.log(mvvm);
+        // var optsCopy = opts;
+        // console.log('optsCopy: ', optsCopy);
+        // var dom = document.getElementById('app').cloneNode(true);
+        // document.body.appendChild(dom);
+        // optsCopy.el = dom;
+        //new TinyVue(optsCopy);
+        new Vue(opts);
     </script>
 </body>
 </html>

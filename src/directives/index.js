@@ -1,3 +1,4 @@
+import vif from './v-if.js';
 /**
  * Directives
  */
@@ -56,7 +57,10 @@ export default {
             }
         }
     },
+    if: vif, 
     each: {
-        
+        update: function (arr) {
+
+        }
     }
 };
