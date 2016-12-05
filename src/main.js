@@ -37,7 +37,7 @@ export default class Main {
          */
         this._bindings = {};
         this._opts = opts;
-        this._reactData = {};
+        this._bindingData = {};
 
         this.beforeCompiler();
         this.init();
@@ -50,7 +50,7 @@ export default class Main {
      */
     init () {
         let self = this;
-        let _data = this._reactData = extend(this._opts.data, this._opts.methods, true);
+        let _data = this._bindingData = extend(this._opts.data, this._opts.methods, true);
         objectEach(_data, (path, item)=>{
             this._initReactive(path, item);
         });
@@ -86,6 +86,9 @@ export default class Main {
         _binding.watches.push(cb);
     }
 
+    /**
+     * turn an normal object to reactive obeject
+     */
     $reactive (obj={}) {
         objectEach(_data, (path, item)=>{
             this._initReactive(path, item);

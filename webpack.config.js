@@ -1,7 +1,8 @@
 module.exports = {
     devtool: 'source-map',
     entry: {
-        tinyVue: './index.js'
+        tinyVue: './index.js',
+        arrayParser: './src/parsers/arrayPathParser.js'
     },
     output: {
         path: './dist',

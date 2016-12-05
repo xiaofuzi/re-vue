@@ -43,7 +43,7 @@ export default class Binding {
         let len = path.length;
 
         let obj, key,
-            isObj = isObject(objectGet(this.vm._reactData, this.key));
+            isObj = isObject(objectGet(this.vm._bindingData, this.key));
         if (len === 1) {
             obj = this.vm;
             key = this.key;

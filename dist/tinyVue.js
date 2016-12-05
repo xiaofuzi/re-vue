@@ -52,11 +52,11 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _main = __webpack_require__(1);
+	var _main = __webpack_require__(3);
 	
 	var _main2 = _interopRequireDefault(_main);
 	
-	var _index = __webpack_require__(5);
+	var _index = __webpack_require__(7);
 	
 	var _index2 = _interopRequireDefault(_index);
 	
@@ -102,7 +102,9 @@
 	window.TinyVue = TinyVue;
 
 /***/ },
-/* 1 */
+/* 1 */,
+/* 2 */,
+/* 3 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -113,23 +115,23 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _binding2 = __webpack_require__(2);
+	var _binding2 = __webpack_require__(4);
 	
 	var _binding3 = _interopRequireDefault(_binding2);
 	
-	var _watcher = __webpack_require__(10);
+	var _watcher = __webpack_require__(13);
 	
 	var _watcher2 = _interopRequireDefault(_watcher);
 	
-	var _parser = __webpack_require__(3);
+	var _parser = __webpack_require__(5);
 	
-	var _observer = __webpack_require__(8);
+	var _observer = __webpack_require__(11);
 	
-	var _config = __webpack_require__(6);
+	var _config = __webpack_require__(9);
 	
 	var _config2 = _interopRequireDefault(_config);
 	
-	var _utils = __webpack_require__(7);
+	var _utils = __webpack_require__(10);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -159,7 +161,7 @@
 	         */
 	        this._bindings = {};
 	        this._opts = opts;
-	        this._reactData = {};
+	        this._bindingData = {};
 	
 	        this.beforeCompiler();
 	        this.init();
@@ -178,7 +180,7 @@
 	            var _this = this;
 	
 	            var self = this;
-	            var _data = this._reactData = (0, _utils.extend)(this._opts.data, this._opts.methods, true);
+	            var _data = this._bindingData = (0, _utils.extend)(this._opts.data, this._opts.methods, true);
 	            (0, _utils.objectEach)(_data, function (path, item) {
 	                _this._initReactive(path, item);
 	            });
@@ -216,6 +218,11 @@
 	            var _binding = this._bindings[key];
 	            _binding.watches.push(cb);
 	        }
+	
+	        /**
+	         * turn an normal object to reactive obeject
+	         */
+	
 	    }, {
 	        key: '$reactive',
 	        value: function $reactive() {
@@ -440,7 +447,7 @@
 	}
 
 /***/ },
-/* 2 */
+/* 4 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -451,11 +458,11 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _parser = __webpack_require__(3);
+	var _parser = __webpack_require__(5);
 	
-	var _utils = __webpack_require__(7);
+	var _utils = __webpack_require__(10);
 	
-	var _observer = __webpack_require__(8);
+	var _observer = __webpack_require__(11);
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
@@ -500,7 +507,7 @@
 	
 	            var obj = void 0,
 	                key = void 0,
-	                isObj = (0, _utils.isObject)((0, _utils.objectGet)(this.vm._reactData, this.key));
+	                isObj = (0, _utils.isObject)((0, _utils.objectGet)(this.vm._bindingData, this.key));
 	            if (len === 1) {
 	                obj = this.vm;
 	                key = this.key;
@@ -598,7 +605,7 @@
 	exports.default = Binding;
 
 /***/ },
-/* 3 */
+/* 5 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -608,7 +615,7 @@
 	});
 	exports.DirectiveParser = undefined;
 	
-	var _directiveParser = __webpack_require__(4);
+	var _directiveParser = __webpack_require__(6);
 	
 	var _directiveParser2 = _interopRequireDefault(_directiveParser);
 	
@@ -617,7 +624,7 @@
 	exports.DirectiveParser = _directiveParser2.default;
 
 /***/ },
-/* 4 */
+/* 6 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -628,11 +635,11 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _index = __webpack_require__(5);
+	var _index = __webpack_require__(7);
 	
 	var _index2 = _interopRequireDefault(_index);
 	
-	var _config = __webpack_require__(6);
+	var _config = __webpack_require__(9);
 	
 	var _config2 = _interopRequireDefault(_config);
 	
@@ -707,7 +714,7 @@
 	;
 
 /***/ },
-/* 5 */
+/* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -716,7 +723,7 @@
 	    value: true
 	});
 	
-	var _vIf = __webpack_require__(11);
+	var _vIf = __webpack_require__(8);
 	
 	var _vIf2 = _interopRequireDefault(_vIf);
 	
@@ -787,7 +794,68 @@
 	};
 
 /***/ },
-/* 6 */
+/* 8 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	
+	var _main = __webpack_require__(3);
+	
+	var _main2 = _interopRequireDefault(_main);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	/**
+	 * if directive
+	 */
+	exports.default = {
+	    bind: function bind() {
+	        this.parent = this.el.parentNode;
+	        this.startRef = document.createComment('Start of v-if-directive');
+	        this.ref = document.createComment('End of v-if-directive');
+	
+	        var next = this.el.nextSibling;
+	        if (next) {
+	            this.parent.insertBefore(this.startRef, next);
+	            this.parent.insertBefore(this.ref, next);
+	        } else {
+	            this.parent.appendChild(this.startRef);
+	            this.parent.appendChild(this.ref);
+	        }
+	    },
+	    update: function update(value) {
+	        if (value) {
+	            this.createDirectiveInstance();
+	        } else {
+	            this.parent.removeChild(this.el);
+	        }
+	    },
+	    createDirectiveInstance: function createDirectiveInstance() {
+	        if (this.childVm) {
+	            this.childVm = null;
+	        }
+	
+	        var node = this.el,
+	            parentVm = this.vm;
+	        this.parent.insertBefore(node, this.ref);
+	
+	        var childVm = new _main2.default({
+	            el: node
+	        });
+	        /**
+	         * 给 if 指令新建一个vm实例，该实例与父实例共享同一个上下文
+	         */
+	        childVm.__proto__ = parentVm;
+	        this.childVm = childVm;
+	    }
+	};
+
+/***/ },
+/* 9 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -800,7 +868,7 @@
 	};
 
 /***/ },
-/* 7 */
+/* 10 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -946,7 +1014,7 @@
 	};
 
 /***/ },
-/* 8 */
+/* 11 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -956,7 +1024,7 @@
 	});
 	exports.arrayObserver = exports.observer = undefined;
 	
-	var _event = __webpack_require__(9);
+	var _event = __webpack_require__(12);
 	
 	var _event2 = _interopRequireDefault(_event);
 	
@@ -992,7 +1060,7 @@
 	exports.arrayObserver = arrayObserver;
 
 /***/ },
-/* 9 */
+/* 12 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -1104,7 +1172,7 @@
 	exports.default = Event;
 
 /***/ },
-/* 10 */
+/* 13 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1115,7 +1183,7 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _observer = __webpack_require__(8);
+	var _observer = __webpack_require__(11);
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
@@ -1163,67 +1231,6 @@
 	}();
 	
 	exports.default = Watcher;
-
-/***/ },
-/* 11 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-	
-	var _main = __webpack_require__(1);
-	
-	var _main2 = _interopRequireDefault(_main);
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
-	/**
-	 * if directive
-	 */
-	exports.default = {
-	    bind: function bind() {
-	        this.parent = this.el.parentNode;
-	        this.startRef = document.createComment('Start of v-if-directive');
-	        this.ref = document.createComment('End of v-if-directive');
-	
-	        var next = this.el.nextSibling;
-	        if (next) {
-	            this.parent.insertBefore(this.startRef, next);
-	            this.parent.insertBefore(this.ref, next);
-	        } else {
-	            this.parent.appendChild(this.startRef);
-	            this.parent.appendChild(this.ref);
-	        }
-	    },
-	    update: function update(value) {
-	        if (value) {
-	            this.createDirectiveInstance();
-	        } else {
-	            this.parent.removeChild(this.el);
-	        }
-	    },
-	    createDirectiveInstance: function createDirectiveInstance() {
-	        if (this.childVm) {
-	            this.childVm = null;
-	        }
-	
-	        var node = this.el,
-	            parentVm = this.vm;
-	        this.parent.insertBefore(node, this.ref);
-	
-	        var childVm = new _main2.default({
-	            el: node
-	        });
-	        /**
-	         * 给 if 指令新建一个vm实例，该实例与父实例共享同一个上下文
-	         */
-	        childVm.__proto__ = parentVm;
-	        this.childVm = childVm;
-	    }
-	};
 
 /***/ }
 /******/ ]);
