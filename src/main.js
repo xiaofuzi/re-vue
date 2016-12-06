@@ -22,16 +22,18 @@ import {
 /**
  * Main class 
  */
+let vmId = 0;
 export default class Main {
-    constructor (opts={}) {
+    constructor (opts={}, parent) {
         /**
          * this.$el:  根节点
          * _bindings: 指令与data关联的桥梁
          */
         this.$el = typeof opts.el === 'string' ? document.querySelector(opts.el) : opts.el;
-        this.$parent = null;
+        this.$parent = parent;
         this.$children = [];
-
+        this.$id = vmId++;
+        this.$index = null;
         /**
          * @private
          */
@@ -56,7 +58,6 @@ export default class Main {
         });
 
         this._initComputed ();
-
         /**
          * 指令处理
          */
@@ -113,6 +114,16 @@ export default class Main {
     /**
      * @private
      */
+    appendTo (vm) {
+        this.$parent = vm;
+        vm.$children.push(this);
+        this.$index = vm.$children.length - 1;
+    }
+
+    remove (index) {
+        this.$parent.$children.splice(this.$index, 1);
+    }
+
     _initComputed () {
         /**
          * computed 属性预处理
@@ -155,20 +166,26 @@ export default class Main {
 
     _compileNode (el) {
         let self = this;
+        let isCompiler = true;
 
         if (el.nodeType === 3) {
             self._compileTextNode(el);
         } else if (el.attributes && el.attributes.length) {
             getAttributes(el.attributes).forEach(function (attr) {
                 let directive = DirectiveParser.parse(attr.name, attr.value);
+
                 if (directive) {
+                    if (DirectiveParser.directives[directive.name].isBlock) {
+                        isCompiler = false;
+                    }
+
                     directive.vm = self;
                     self._bind(el, directive);
                 }
             });
         }
 
-        if (el.childNodes.length) {
+        if (isCompiler&&el.childNodes.length) {
             forEach(el.childNodes, function (child) {
                 self._compileNode(child);
             });
@@ -187,8 +204,9 @@ export default class Main {
         directive.el = el;
 
         let key = directive.key,
-            binding = this._bindings[key];
+            binding = getBinding(this, key);
 
+        console.log('parent binding: ', key, binding, this);
         /**
          * directive hook
          */
@@ -204,7 +222,7 @@ export default class Main {
 
             //get computed property key
             let computedKey = key.split('.')[0];
-            binding = this._bindings[computedKey];
+            binding = getBinding(this, computedKey); 
             if (binding.isComputed) {
                 binding.directives.push(directive);
             } else {
@@ -213,6 +231,13 @@ export default class Main {
         } 
         
         binding.directives.push(directive);
+
+        /**
+         * 子 vm bingding时更新DOM
+         */
+        if (this.$parent&&!this._bindings[key]) {
+            binding.update();
+        }
     } 
 
     _createBinding (key) {
@@ -272,7 +297,21 @@ function getAttributes (attributes) {
     });
 }
 
+/**
+ * vm binding 获取，支持继承
+ */
+function getBinding (vm, key) {
+    if (!vm) {
+        return ;
+    }
 
+    let binding = vm._bindings[key];
+    if (binding) {
+        return binding;
+    } else {
+        return getBinding(vm.$parent, key);
+    }
+}
 
 
 

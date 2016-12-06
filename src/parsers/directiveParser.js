@@ -59,4 +59,6 @@ export default class DirectiveParser {
             ? new DirectiveParser(directiveName, directiveArg, expression)
             : null;
     }
+
+    static directives = Directives
 };

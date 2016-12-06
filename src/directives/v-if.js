@@ -4,6 +4,7 @@ import Vm from '../main.js';
  * if directive
  */
 export default {
+    isBlock: true,
     bind () {
         this.parent = this.el.parentNode;
         this.startRef = document.createComment('Start of v-if-directive');
@@ -23,6 +24,7 @@ export default {
             this.createDirectiveInstance();
         } else {
             this.parent.removeChild(this.el);
+            this.childVm&&this.childVm.remove();
         }
     },
     createDirectiveInstance () {
@@ -36,11 +38,13 @@ export default {
 
         let childVm = new Vm({
             el: node
-        });
+        }, this.vm);
         /**
          * 给 if 指令新建一个vm实例，该实例与父实例共享同一个上下文
          */
         childVm.__proto__ = parentVm;
+        childVm.appendTo(parentVm);
+        console.log('childVm: ', childVm);
         this.childVm = childVm;
     }
 };

@@ -43,7 +43,10 @@ export default class Binding {
         let len = path.length;
 
         let obj, key,
-            isObj = isObject(objectGet(this.vm._bindingData, this.key));
+            currentBindingData = objectGet(this.vm._bindingData, this.key),
+            isObj = isObject(currentBindingData),
+            isArray = Array.isArray(currentBindingData);
+
         if (len === 1) {
             obj = this.vm;
             key = this.key;
@@ -65,13 +68,16 @@ export default class Binding {
             set (value) {
                 if (value !== self.value) {
                     self.oldValue = self.value;
-                    if (!isObj) {
+                    if (isArray) {
                         self.value = value;
                         self.update(value);
-                    } else {
+                    } else if (isObj) {
                         for (let prop in value) {
                             self.value[prop] = value[prop];
                         } 
+                    } else {
+                        self.value = value;
+                        self.update(value);
                     }
                     observer.emit(self.key, self);
                     self.refresh();
@@ -100,7 +106,11 @@ export default class Binding {
         });
     }
 
-    update (value) {
+    update (value=null) {
+        if (value === null) {
+            value = this.value;
+        }
+
         let self = this;
         this.directives.forEach(function (directive) {
             /**

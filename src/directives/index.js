@@ -1,4 +1,5 @@
 import vif from './v-if.js';
+import vfor from './v-for.js';
 /**
  * Directives
  */
@@ -57,7 +58,8 @@ export default {
             }
         }
     },
-    if: vif, 
+    if: vif,
+    for: vfor, 
     each: {
         update: function (arr) {
 

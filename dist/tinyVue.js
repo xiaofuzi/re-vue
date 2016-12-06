@@ -139,12 +139,16 @@
 	
 	var prefix = _config2.default.prefix;
 	
+	
 	/**
 	 * Main class 
 	 */
+	var vmId = 0;
+	
 	var Main = function () {
 	    function Main() {
 	        var opts = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+	        var parent = arguments[1];
 	
 	        _classCallCheck(this, Main);
 	
@@ -153,9 +157,10 @@
 	         * _bindings: 指令与data关联的桥梁
 	         */
 	        this.$el = typeof opts.el === 'string' ? document.querySelector(opts.el) : opts.el;
-	        this.$parent = null;
+	        this.$parent = parent;
 	        this.$children = [];
-	
+	        this.$id = vmId++;
+	        this.$index = null;
 	        /**
 	         * @private
 	         */
@@ -186,7 +191,6 @@
 	            });
 	
 	            this._initComputed();
-	
 	            /**
 	             * 指令处理
 	             */
@@ -259,6 +263,18 @@
 	         */
 	
 	    }, {
+	        key: 'appendTo',
+	        value: function appendTo(vm) {
+	            this.$parent = vm;
+	            vm.$children.push(this);
+	            this.$index = vm.$children.length - 1;
+	        }
+	    }, {
+	        key: 'remove',
+	        value: function remove(index) {
+	            this.$parent.$children.splice(this.$index, 1);
+	        }
+	    }, {
 	        key: '_initComputed',
 	        value: function _initComputed() {
 	            var _this3 = this;
@@ -311,20 +327,26 @@
 	        key: '_compileNode',
 	        value: function _compileNode(el) {
 	            var self = this;
+	            var isCompiler = true;
 	
 	            if (el.nodeType === 3) {
 	                self._compileTextNode(el);
 	            } else if (el.attributes && el.attributes.length) {
 	                getAttributes(el.attributes).forEach(function (attr) {
 	                    var directive = _parser.DirectiveParser.parse(attr.name, attr.value);
+	
 	                    if (directive) {
+	                        if (_parser.DirectiveParser.directives[directive.name].isBlock) {
+	                            isCompiler = false;
+	                        }
+	
 	                        directive.vm = self;
 	                        self._bind(el, directive);
 	                    }
 	                });
 	            }
 	
-	            if (el.childNodes.length) {
+	            if (isCompiler && el.childNodes.length) {
 	                (0, _utils.forEach)(el.childNodes, function (child) {
 	                    self._compileNode(child);
 	                });
@@ -347,8 +369,9 @@
 	            directive.el = el;
 	
 	            var key = directive.key,
-	                binding = this._bindings[key];
+	                binding = getBinding(this, key);
 	
+	            console.log('parent binding: ', key, binding, this);
 	            /**
 	             * directive hook
 	             */
@@ -364,7 +387,7 @@
 	
 	                //get computed property key
 	                var computedKey = key.split('.')[0];
-	                binding = this._bindings[computedKey];
+	                binding = getBinding(this, computedKey);
 	                if (binding.isComputed) {
 	                    binding.directives.push(directive);
 	                } else {
@@ -373,6 +396,13 @@
 	            }
 	
 	            binding.directives.push(directive);
+	
+	            /**
+	             * 子 vm bingding时更新DOM
+	             */
+	            if (this.$parent && !this._bindings[key]) {
+	                binding.update();
+	            }
 	        }
 	    }, {
 	        key: '_createBinding',
@@ -445,6 +475,22 @@
 	        };
 	    });
 	}
+	
+	/**
+	 * vm binding 获取，支持继承
+	 */
+	function getBinding(vm, key) {
+	    if (!vm) {
+	        return;
+	    }
+	
+	    var binding = vm._bindings[key];
+	    if (binding) {
+	        return binding;
+	    } else {
+	        return getBinding(vm.$parent, key);
+	    }
+	}
 
 /***/ },
 /* 4 */
@@ -507,7 +553,10 @@
 	
 	            var obj = void 0,
 	                key = void 0,
-	                isObj = (0, _utils.isObject)((0, _utils.objectGet)(this.vm._bindingData, this.key));
+	                currentBindingData = (0, _utils.objectGet)(this.vm._bindingData, this.key),
+	                isObj = (0, _utils.isObject)(currentBindingData),
+	                isArray = Array.isArray(currentBindingData);
+	
 	            if (len === 1) {
 	                obj = this.vm;
 	                key = this.key;
@@ -528,13 +577,16 @@
 	                set: function set(value) {
 	                    if (value !== self.value) {
 	                        self.oldValue = self.value;
-	                        if (!isObj) {
+	                        if (isArray) {
 	                            self.value = value;
 	                            self.update(value);
-	                        } else {
+	                        } else if (isObj) {
 	                            for (var prop in value) {
 	                                self.value[prop] = value[prop];
 	                            }
+	                        } else {
+	                            self.value = value;
+	                            self.update(value);
 	                        }
 	                        _observer.observer.emit(self.key, self);
 	                        self.refresh();
@@ -565,7 +617,13 @@
 	        }
 	    }, {
 	        key: 'update',
-	        value: function update(value) {
+	        value: function update() {
+	            var value = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+	
+	            if (value === null) {
+	                value = this.value;
+	            }
+	
 	            var self = this;
 	            this.directives.forEach(function (directive) {
 	                /**
@@ -710,6 +768,7 @@
 	    return DirectiveParser;
 	}();
 	
+	DirectiveParser.directives = _index2.default;
 	exports.default = DirectiveParser;
 	;
 
@@ -726,6 +785,10 @@
 	var _vIf = __webpack_require__(8);
 	
 	var _vIf2 = _interopRequireDefault(_vIf);
+	
+	var _vFor = __webpack_require__(14);
+	
+	var _vFor2 = _interopRequireDefault(_vFor);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -788,6 +851,7 @@
 	        }
 	    },
 	    if: _vIf2.default,
+	    for: _vFor2.default,
 	    each: {
 	        update: function update(arr) {}
 	    }
@@ -813,6 +877,7 @@
 	 * if directive
 	 */
 	exports.default = {
+	    isBlock: true,
 	    bind: function bind() {
 	        this.parent = this.el.parentNode;
 	        this.startRef = document.createComment('Start of v-if-directive');
@@ -832,6 +897,7 @@
 	            this.createDirectiveInstance();
 	        } else {
 	            this.parent.removeChild(this.el);
+	            this.childVm && this.childVm.remove();
 	        }
 	    },
 	    createDirectiveInstance: function createDirectiveInstance() {
@@ -845,11 +911,13 @@
 	
 	        var childVm = new _main2.default({
 	            el: node
-	        });
+	        }, this.vm);
 	        /**
 	         * 给 if 指令新建一个vm实例，该实例与父实例共享同一个上下文
 	         */
 	        childVm.__proto__ = parentVm;
+	        childVm.appendTo(parentVm);
+	        console.log('childVm: ', childVm);
 	        this.childVm = childVm;
 	    }
 	};
@@ -1231,6 +1299,86 @@
 	}();
 	
 	exports.default = Watcher;
+
+/***/ },
+/* 14 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	
+	var _main = __webpack_require__(3);
+	
+	var _main2 = _interopRequireDefault(_main);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	/**
+	 * v-for directive
+	 */
+	exports.default = {
+	    /**
+	     * 单独进行编译
+	     */
+	    isBlock: true,
+	    bind: function bind() {
+	        this.parent = this.el.parentNode;
+	        this.startRef = document.createComment('Start of v-for-directive');
+	        this.container = document.createElement('div');
+	        this.endRef = document.createComment('End of v-for-directive');
+	
+	        var next = this.el.nextSibling;
+	        if (next) {
+	            this.parent.insertBefore(this.startRef, next);
+	            this.parent.insertBefore(this.container, next);
+	            this.parent.insertBefore(this.endRef, next);
+	        } else {
+	            this.parent.appendChild(this.startRef);
+	            this.parent.appendChild(this.container);
+	            this.parent.appendChild(this.endRef);
+	        }
+	
+	        this.parent.removeChild(this.el);
+	        /**
+	         * vfor vm instance
+	         */
+	        this.$vm = new _main2.default({
+	            el: this.container
+	        });
+	        this.$vm.appendTo(this.vm);
+	        console.log('this.$vm: ', this.$vm);
+	        this.$childElements = [];
+	    },
+	    update: function update() {
+	        var _this = this;
+	
+	        var arr = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
+	
+	        arr.forEach(function (item, index) {
+	            _this.createChildInstance(item, index);
+	        });
+	    },
+	    createChildInstance: function createChildInstance(item, index) {
+	        var vm = void 0,
+	            node = this.el.cloneNode(true);
+	
+	        this.container.appendChild(node);
+	        vm = new _main2.default({
+	            el: node
+	        }, this.$vm);
+	        vm.__proto__ = this.$vm;
+	
+	        vm.$parent = this.$vm;
+	        this.$vm.$children[index] = vm;
+	        vm.$index = this.$vm.$children.length - 1;
+	
+	        console.log('vfor item: ', vm);
+	        this.$childElements[index] = node;
+	    }
+	};
 
 /***/ }
 /******/ ]);

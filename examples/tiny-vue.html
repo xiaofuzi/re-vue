@@ -24,14 +24,18 @@
         <button v-on:click='add' type="button">add</button>        
         <button v-on:click='toggle' type="button">toggle</button> 
         <p v-text='wellcome.text'></p>
-        <p v-text='todos[0].text'></p>
         <div v-if='isShow'>
             <p v-text='counter'></p>
             <p v-text='info.age'></p>
         </div>
+        <div v-for='todos'>
+            <p v-text='counter'></p>
+            <p v-text='info.age'></p>
+        </div>
+
     </div>
     <script src='../dist/tinyVue.js'></script>
-    <script src='http://cdn.bootcss.com/vue/1.0.26/vue.js'></script>
+    <!-- <script src='http://cdn.bootcss.com/vue/1.0.26/vue.js'></script> -->
     <script>
         var mvvm;
         var opts = {
@@ -97,7 +101,7 @@
         TinyVue.$directive('visible', function (value) {
             this.el.style.visibility = value ? 'visible' : 'hidden';
         })
-        //mvvm = new TinyVue(opts);
+        mvvm = new TinyVue(opts);
 
         //mvvm = new Vue(opts);
         //console.log(mvvm);
@@ -107,27 +111,8 @@
         // document.body.appendChild(dom);
         // optsCopy.el = dom;
         //new TinyVue(optsCopy);
-        mvvm = new Vue(opts);
+        //mvvm = new Vue(opts);
         console.log('mvvm: ', mvvm);
-
-        var arr = [1, 2, 3, 4];
-        var _arr = [1, 2, 3, 4];
-        Object.defineProperty(arr, 0, {
-            get: function () {
-                return _arr[0];
-            },
-            set: function (val) {
-                _arr[0] = val;
-                console.log('arr[0] setter: ', arr[0]);
-            },
-            enumerable: true
-        });
-
-        arr[0] = 'yangxiaofu';
-        console.log('outer: ', arr[0], arr[1], Array.isArray(arr));
-        arr.forEach((item)=>{
-            console.log('arr: ', item);
-        })
     </script>
 </body>
 </html>

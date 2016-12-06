@@ -196,7 +196,8 @@
 	
 	//console.log(stringKey()(ps('"item"')));
 	//console.log(parenKey()(ps('[info.item]')));
-	//console.log('getter: ', getExpresion()(ps('obj[info.a].name[age]["weight"]')));
+	
+	console.log('getter: ', getExpresion()((0, _state2.default)('obj[info.a].name[age]["weight"]')));
 	//console.log('complex: ', complexGetExpression()(ps('person[name][info][obj["name"]]')));
 
 /***/ },
