@@ -241,7 +241,11 @@
 	        key: '$destroy',
 	        value: function $destroy() {
 	            this.remove();
+	            (0, _utils.forEach)(this._bindings, function (binding) {
+	                binding.destroy();
+	            });
 	            this.$parent = null;
+	            this.$el.parentNode.removeChild(this.$el);
 	        }
 	
 	        /**
@@ -391,7 +395,7 @@
 	                isParentVm = false;
 	            el.removeAttribute(prefix + '-' + directive.name);
 	            directive.el = el;
-	
+	            //console.log('directive: ', this, directive);
 	            var key = directive.key,
 	                binding = this._getBinding(this, key);
 	
@@ -412,11 +416,11 @@
 	                //get computed property key
 	                var computedKey = key.split('.')[0];
 	                binding = this._getBinding(this, computedKey);
-	                console.log('computedKey: ', binding, this, key);
 	                processBinding(computedKey);
 	                if (binding.isComputed) {
 	                    binding.directives.push(directive);
 	                } else {
+	                    console.log('directive: ', this, directive);
 	                    console.error(key + ' is not defined.');
 	                }
 	            } else {
@@ -831,6 +835,20 @@
 	                this[prop] = directive[prop];
 	            }
 	        }
+	
+	        /**
+	         * directive expression process
+	         */
+	        if (this.name == 'for') {
+	            this.rawKey = this.key;
+	            var keyArray = this.rawKey.split(' ');
+	
+	            if (keyArray.length != 3) {
+	                console.log('Invalid expression of v-for');
+	            }
+	            this.key = keyArray[2];
+	            this.subKey = keyArray[0];
+	        }
 	    }
 	
 	    _createClass(DirectiveParser, null, [{
@@ -1061,14 +1079,15 @@
 	        this.parent.removeChild(this.el);
 	        this.parent.index++;
 	
-	        this.$childElements = [];
+	        this.childElements = [];
+	        this.childVms = [];
 	    },
 	    update: function update() {
 	        var _this = this;
 	
 	        var arr = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
 	
-	        this.bodyArray = arr;
+	        this.unbind();
 	        arr.forEach(function (item, index) {
 	            _this.createChildInstance(item, index);
 	        });
@@ -1080,17 +1099,28 @@
 	        this.parent.insertBefore(node, this.endRef);
 	        this.parent.index++;
 	
+	        /**
+	         * array item data process
+	         */
+	        var data = {};
+	        data[this.subKey] = item;
+	        console.log('child vm: ', this);
 	        vm = new _main2.default({
-	            el: node
+	            el: node,
+	            data: data
 	        }, this.vm);
 	        vm.__proto__ = this.$vm;
 	
 	        vm.appendTo(this.vm);
-	        console.log('child vm: ', vm);
-	        this.$childElements[index] = node;
+	        this.childElements[index] = node;
+	        this.childVms[index] = vm;
 	    },
 	    unbind: function unbind() {
-	        if (this.bodyArray) {}
+	        if (this.childVms.length != 0) {
+	            this.childVms.forEach(function (child) {
+	                child.$destroy();
+	            });
+	        }
 	    }
 	};
 

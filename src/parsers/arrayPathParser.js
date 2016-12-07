@@ -47,8 +47,6 @@ function identifer () {
                         ch('$')
                     )            
                 );
-    if (!result) return false;
-
     return action(result, function(ast){
         return {
                 type: 'identifer',
@@ -62,8 +60,6 @@ function identifer () {
  */
 function identiferKey () {
     let result = identifer();
-
-    if (!result) return false;
 
     return action(result, function (ast) {
         return {
@@ -130,9 +126,9 @@ function parenKey () {
         let result = sequence(
                         leftParen(),
                         choice(
-                            getExpresion(),
                             identiferKey(),
-                            stringKey()
+                            stringKey()//,
+                            //getExpresion()
                             ),
                         rightParen()
                         )(state);
@@ -159,13 +155,11 @@ function getExpresion () {
             identifer(),
             repeat1(
                 choice(
-                    pointKey(),
-                    parenKey()
+                    parenKey(),
+                    pointKey()
                 )
             )
         );
-
-    if (!result) return false;
 
     return action(result, function (ast) {
         return {
@@ -181,9 +175,52 @@ function getExpresion () {
 /**
  * arrayParser
  */
-export default getExpresion;
+function evalArrayPathObject (pathStr, ctx) {
+    let currentValue = null,
+        ast = getExpresion()(ps(pathStr)).ast;
+
+    if (ast) {
+        evalValue(ast);
+    }
+
+    return currentValue;
+
+    function evalValue (ast) {
+        if (ast.type == 'getterExpression') {
+            currentValue = ctx[ast.value.object.value];
+            ast.value.keys.forEach((key)=>{
+                if (key.value.type === 'identiferKey') {
+                    currentValue = currentValue[ctx[key.value.value]];
+                } else {
+                    currentValue = currentValue[key.value.value.value];
+                }
+            });
+        }
+    }
+}
+
+/*
+let ctx = {
+    person: {
+        age: 18,
+        name: 'yang',
+        info: {
+            height: 170
+        }
+    },
+    key: 'info'
+}
+
+let val = evalArrayPathObject('person[key]["height"]', ctx);
+
+console.log('val: ', val);
+*/
+export {
+    evalArrayPathObject
+};
 
 //console.log(stringKey()(ps('"item"')));
-//console.log(parenKey()(ps('[info.item]')));
-console.log('getter: ', getExpresion()(ps('obj[info.a].name[age]["weight"]')));
+console.log('getter: ', getExpresion()(ps('obj[a]')));
+console.log(parenKey()(ps('[obj[a]]')));
+console.log('getter: ', getExpresion()(ps('obj[info][age]["weight"]')));
 //console.log('complex: ', complexGetExpression()(ps('person[name][info][obj["name"]]')));

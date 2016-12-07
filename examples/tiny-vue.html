@@ -29,8 +29,10 @@
         <div v-if='isShow'>
             <p v-text='info.age'></p>
         </div>
-        <div v-for='todos'>
-            <p v-text='counter'></p>
+        <h2>v-for directive</h2>
+        <div v-for='item in todos'>
+            <h2 v-text='counter'></h2>
+            <p v-text='item.text'></p>
         </div>
     </div>
     <script src='../dist/tinyVue.js'></script>
@@ -90,9 +92,9 @@
                 
                 setTimeout(function () {
                     self.hello = 'Done!';
-                    self.todos = [{
-                        text: 'I\'m new here!'
-                    }];
+                    // self.todos = [{
+                    //     text: 'I\'m new here!'
+                    // }];
                 }, 3000)
             }
         }

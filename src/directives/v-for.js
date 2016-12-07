@@ -25,10 +25,11 @@ export default {
         this.parent.removeChild(this.el);
         this.parent.index++;
         
-        this.$childElements = [];
+        this.childElements = [];
+        this.childVms = []
     },
     update (arr=[]) {
-        this.bodyArray = arr;
+        this.unbind();
         arr.forEach((item, index)=>{
             this.createChildInstance(item, index);
         });
@@ -39,19 +40,27 @@ export default {
         this.parent.insertBefore(node, this.endRef);
         this.parent.index++;
 
+        /**
+         * array item data process
+         */
+        let data = {};
+        data[this.subKey] = item;
+        console.log('child vm: ', this);
         vm = new Vm({
             el: node,
-            //data: item
+            data: data
         }, this.vm);
         vm.__proto__ = this.$vm;
 
         vm.appendTo(this.vm);
-        console.log('child vm: ', vm);
-        this.$childElements[index] = node;
+        this.childElements[index] = node;
+        this.childVms[index] = vm;
     },
     unbind () {
-        if (this.bodyArray) {
-
+        if (this.childVms.length != 0) {
+            this.childVms.forEach((child)=>{
+                child.$destroy();
+            });
         }
     }
 }

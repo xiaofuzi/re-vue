@@ -27,6 +27,20 @@ export default class DirectiveParser {
                 this[prop] = directive[prop];
             }
         }
+
+        /**
+         * directive expression process
+         */
+        if (this.name == 'for') {
+            this.rawKey = this.key;
+            let keyArray = this.rawKey.split(' ');
+
+            if (keyArray.length != 3) {
+                console.log('Invalid expression of v-for');
+            }
+            this.key = keyArray[2];
+            this.subKey = keyArray[0];
+        }
     }
 
 

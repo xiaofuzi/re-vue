@@ -98,7 +98,11 @@ export default class Main {
 
     $destroy () {
         this.remove();
+        forEach(this._bindings, (binding)=>{
+            binding.destroy();
+        });
         this.$parent = null;
+        this.$el.parentNode.removeChild(this.$el);
     }
 
     /**
@@ -224,7 +228,7 @@ export default class Main {
             isParentVm = false;
         el.removeAttribute(prefix + '-' + directive.name);
         directive.el = el;
-
+        //console.log('directive: ', this, directive);
         let key = directive.key,
             binding = this._getBinding(this, key);
 
@@ -245,11 +249,11 @@ export default class Main {
             //get computed property key
             let computedKey = key.split('.')[0];
             binding = this._getBinding(this, computedKey);
-            console.log('computedKey: ', binding, this, key); 
             processBinding(computedKey);
             if (binding.isComputed) {
                 binding.directives.push(directive);
             } else {
+                console.log('directive: ', this, directive);
                 console.error(key + ' is not defined.');
             }
         } else {

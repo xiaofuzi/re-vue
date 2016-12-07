@@ -49,6 +49,7 @@
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
+	exports.evalArrayPathObject = undefined;
 	
 	var _parser = __webpack_require__(1);
 	
@@ -88,8 +89,6 @@
 	 */
 	function identifer() {
 	    var result = (0, _parser.repeat1)((0, _parser.choice)((0, _parser.range)('a', 'z'), (0, _parser.range)('A', 'Z'), (0, _parser.ch)('_'), (0, _parser.ch)('$')));
-	    if (!result) return false;
-	
 	    return (0, _parser.action)(result, function (ast) {
 	        return {
 	            type: 'identifer',
@@ -103,8 +102,6 @@
 	 */
 	function identiferKey() {
 	    var result = identifer();
-	
-	    if (!result) return false;
 	
 	    return (0, _parser.action)(result, function (ast) {
 	        return {
@@ -154,7 +151,9 @@
 	
 	function parenKey() {
 	    return function (state) {
-	        var result = (0, _parser.sequence)(leftParen(), (0, _parser.choice)(getExpresion(), identiferKey(), stringKey()), rightParen())(state);
+	        var result = (0, _parser.sequence)(leftParen(), (0, _parser.choice)(identiferKey(), stringKey() //,
+	        //getExpresion()
+	        ), rightParen())(state);
 	
 	        console.log('parenKey: ', result);
 	        if (!result) return false;
@@ -174,9 +173,7 @@
 	 * object get expression
 	 */
 	function getExpresion() {
-	    var result = (0, _parser.sequence)(identifer(), (0, _parser.repeat1)((0, _parser.choice)(pointKey(), parenKey())));
-	
-	    if (!result) return false;
+	    var result = (0, _parser.sequence)(identifer(), (0, _parser.repeat1)((0, _parser.choice)(parenKey(), pointKey())));
 	
 	    return (0, _parser.action)(result, function (ast) {
 	        return {
@@ -192,12 +189,53 @@
 	/**
 	 * arrayParser
 	 */
-	exports.default = getExpresion;
+	function evalArrayPathObject(pathStr, ctx) {
+	    var currentValue = null,
+	        ast = getExpresion()((0, _state2.default)(pathStr)).ast;
+	
+	    if (ast) {
+	        evalValue(ast);
+	    }
+	
+	    return currentValue;
+	
+	    function evalValue(ast) {
+	        if (ast.type == 'getterExpression') {
+	            currentValue = ctx[ast.value.object.value];
+	            ast.value.keys.forEach(function (key) {
+	                if (key.value.type === 'identiferKey') {
+	                    currentValue = currentValue[ctx[key.value.value]];
+	                } else {
+	                    currentValue = currentValue[key.value.value.value];
+	                }
+	            });
+	        }
+	    }
+	}
+	
+	/*
+	let ctx = {
+	    person: {
+	        age: 18,
+	        name: 'yang',
+	        info: {
+	            height: 170
+	        }
+	    },
+	    key: 'info'
+	}
+	
+	let val = evalArrayPathObject('person[key]["height"]', ctx);
+	
+	console.log('val: ', val);
+	*/
+	exports.evalArrayPathObject = evalArrayPathObject;
 	
 	//console.log(stringKey()(ps('"item"')));
-	//console.log(parenKey()(ps('[info.item]')));
 	
-	console.log('getter: ', getExpresion()((0, _state2.default)('obj[info.a].name[age]["weight"]')));
+	console.log('getter: ', getExpresion()((0, _state2.default)('obj[a]')));
+	console.log(parenKey()((0, _state2.default)('[obj[a]]')));
+	console.log('getter: ', getExpresion()((0, _state2.default)('obj[info][age]["weight"]')));
 	//console.log('complex: ', complexGetExpression()(ps('person[name][info][obj["name"]]')));
 
 /***/ },
