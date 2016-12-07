@@ -37,7 +37,13 @@
             </div>
         </div>
         <h2 v-text='hello'></h2>
-        <sub-component></sub-component>
+
+        <h2>SubComponent</h2>
+        <div v-for='item in todos'>
+            <sub-component />
+        </div>
+        <hello-world></hello-world>
+        <hello-world></hello-world>
     </div>
     <script src='../dist/tinyVue.js'></script>
     <!-- <script src='http://cdn.bootcss.com/vue/1.0.26/vue.js'></script> -->
@@ -45,10 +51,21 @@
         var mvvm;
         var subComponent = {
             template: '<div><h2 v-text="name"></h2></div>',
-            data: {
-                name: 'an new component!'
+            data: function (){
+                return {
+                    name: 'an new component!'
+                }
             }
         }
+
+        TinyVue.component('hello-world', {
+            template: '<div><h2 v-text="name"></h2></div>',
+            data: function (){
+                return {
+                    name: 'hello world component!'
+                }
+            }
+        });
         var opts = {
             el: '#app',
             data: {

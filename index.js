@@ -16,6 +16,13 @@ export default class TinyVue extends Main {
             Directives[name] = fn;
         }
     }
+
+    /**
+     * 定义全局组件
+     */
+    static component (componentName, opts) {
+        this.components[componentName] = opts;
+    }
 }
 
 window.TinyVue = TinyVue;

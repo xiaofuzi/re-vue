@@ -91,6 +91,16 @@
 	                _index2.default[name] = fn;
 	            }
 	        }
+	
+	        /**
+	         * 定义全局组件
+	         */
+	
+	    }, {
+	        key: 'component',
+	        value: function component(componentName, opts) {
+	            this.components[componentName] = opts;
+	        }
 	    }]);
 	
 	    return TinyVue;
@@ -161,9 +171,18 @@
 	        this.$children = [];
 	        this.$components = [];
 	        this.$id = vmId++;
+	
 	        /**
 	         * @private
 	         */
+	
+	        /**
+	         * data opt process
+	         */
+	        if ((0, _utils.isFunc)(opts.data)) {
+	            opts.data = opts.data();
+	        }
+	
 	        this._bindings = {};
 	        this._opts = opts;
 	        this._bindingData = {};
@@ -174,13 +193,13 @@
 	        this.ready();
 	    }
 	
-	    /**
-	     * 初始化函数
-	     */
-	
-	
 	    _createClass(Main, [{
 	        key: 'init',
+	
+	
+	        /**
+	         * 初始化函数
+	         */
 	        value: function init() {
 	            var _this = this;
 	
@@ -364,14 +383,17 @@
 	            /**
 	             * 子组件处理
 	             */
-	            var nodeName = el.nodeName.toLowerCase();
-	            if (this.components) {
-	                var component = this.components[(0, _utils.toCamels)(nodeName)] || this.components[nodeName];
-	                if (component) {
-	                    this._compilerComponent(el, component);
+	            var nodeName = el.nodeName.toLowerCase(),
+	                component = getComponent(this, (0, _utils.toCamels)(nodeName));
 	
-	                    return;
-	                }
+	            if (!component) {
+	                component = getComponent(this, nodeName);
+	            }
+	
+	            if (component) {
+	                this._compilerComponent(el, component);
+	
+	                return;
 	            }
 	
 	            /**
@@ -422,11 +444,27 @@
 	        value: function _compilerComponent(el, component) {
 	            var parent = el.parentNode,
 	                container = document.createElement('div'),
+	                next = el.nextSibling,
+	                startRef = document.createComment('Start of v-component'),
+	                endRef = document.createComment('End of v-component'),
 	                conponentInstance = void 0;
 	
-	            parent.insertBefore(container, el);
+	            if (next) {
+	                parent.insertBefore(startRef, next);
+	                parent.insertBefore(endRef, next);
+	            } else {
+	                parent.appendChild(startRef);
+	                parent.appendChild(endRef);
+	            }
+	
+	            parent.insertBefore(container, endRef);
 	            parent.removeChild(el);
-	            console.log('parent component: ', parent);
+	
+	            /**
+	             * 父节点遍历标识更新
+	             */
+	            parent.index += 2;
+	
 	            container.innerHTML = component.template;
 	            component.el = container;
 	
@@ -584,6 +622,7 @@
 	 */
 	
 	
+	Main.components = {};
 	exports.default = Main;
 	function getAttributes(attributes) {
 	    return (0, _utils.map)(attributes, function (attr) {
@@ -592,6 +631,28 @@
 	            value: attr.value
 	        };
 	    });
+	}
+	
+	/**
+	 * 获取 component 辅助函数
+	 * vm嵌套情况，组件声明存储于更vm实例
+	 */
+	function getComponent(vm, componentName) {
+	    var components = getComponents(vm);
+	
+	    if (components) {
+	        return components[componentName] || Main.components[componentName];
+	    } else {
+	        return Main.components[componentName];
+	    }
+	}
+	
+	function getComponents(vm) {
+	    if (vm.$parent) {
+	        return getComponents(vm.$parent);
+	    } else {
+	        return vm.components;
+	    }
 	}
 
 /***/ },

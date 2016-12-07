@@ -37,9 +37,18 @@ export default class Main {
         this.$children = [];
         this.$components = [];
         this.$id = vmId++;
+
         /**
          * @private
          */
+
+        /**
+         * data opt process
+         */
+        if (isFunc(opts.data)) {
+            opts.data = opts.data();
+        }
+
         this._bindings = {};
         this._opts = opts;
         this._bindingData = {};
@@ -49,6 +58,8 @@ export default class Main {
 
         this.ready();
     }
+
+    static components = {}
 
     /**
      * 初始化函数
@@ -200,14 +211,17 @@ export default class Main {
         /**
          * 子组件处理
          */
-        let nodeName = el.nodeName.toLowerCase();
-        if (this.components) {
-            let component = this.components[toCamels(nodeName)] || this.components[nodeName];
-            if (component) {
-                this._compilerComponent(el, component);
+        let nodeName = el.nodeName.toLowerCase(),
+            component = getComponent(this, toCamels(nodeName));
 
-                return ;
-            }
+        if (!component) {
+            component = getComponent(this, nodeName);
+        }
+
+        if (component) {
+            this._compilerComponent(el, component);
+
+            return ;
         }
 
         /**
@@ -256,11 +270,27 @@ export default class Main {
     _compilerComponent (el, component) {
         let parent = el.parentNode,
             container = document.createElement('div'),
+            next = el.nextSibling,
+            startRef = document.createComment('Start of v-component'),
+            endRef = document.createComment('End of v-component'),
             conponentInstance;
 
-        parent.insertBefore(container, el);
+        if (next) {
+            parent.insertBefore(startRef, next);
+            parent.insertBefore(endRef, next);
+        } else {
+            parent.appendChild(startRef);
+            parent.appendChild(endRef);
+        }
+
+        parent.insertBefore(container, endRef);
         parent.removeChild(el);
-        console.log('parent component: ', parent);
+
+        /**
+         * 父节点遍历标识更新
+         */
+        parent.index += 2;
+
         container.innerHTML = component.template;
         component.el = container;
 
@@ -406,6 +436,29 @@ function getAttributes (attributes) {
             value: attr.value
         };
     });
+}
+
+/**
+ * 获取 component 辅助函数
+ * vm嵌套情况，组件声明存储于更vm实例
+ */
+function getComponent (vm, componentName) {
+    let components = getComponents(vm);
+    
+    if (components) {
+        return components[componentName] || Main.components[componentName];
+
+    } else {
+        return Main.components[componentName];
+    }
+}
+
+function getComponents (vm) {
+    if (vm.$parent) {
+        return getComponents(vm.$parent);
+    } else {
+        return vm.components;
+    }
 }
 
 
