@@ -395,7 +395,6 @@
 	                isParentVm = false;
 	            el.removeAttribute(prefix + '-' + directive.name);
 	            directive.el = el;
-	            //console.log('directive: ', this, directive);
 	            var key = directive.key,
 	                binding = this._getBinding(this, key);
 	
@@ -420,7 +419,6 @@
 	                if (binding.isComputed) {
 	                    binding.directives.push(directive);
 	                } else {
-	                    console.log('directive: ', this, directive);
 	                    console.error(key + ' is not defined.');
 	                }
 	            } else {
@@ -643,7 +641,11 @@
 	                        self.oldValue = self.value;
 	                        if (isArray) {
 	                            self.value = value;
-	                            self.update(value);
+	
+	                            (0, _observer.arrayObserver)(self.value, function () {
+	                                self.update();
+	                            });
+	                            self.update(self.value);
 	                        } else if (isObj) {
 	                            for (var prop in value) {
 	                                self.value[prop] = value[prop];
@@ -917,7 +919,7 @@
 	     * 对应于 v-text 指令
 	     */
 	    text: function text(value) {
-	        this.el.textContent = value || '';
+	        this.el.textContent = value === undefined ? '' : value;
 	    },
 	    /**
 	     * 对应于 v-model 指令
@@ -1102,9 +1104,10 @@
 	        /**
 	         * array item data process
 	         */
-	        var data = {};
+	        var data = {
+	            $index: index
+	        };
 	        data[this.subKey] = item;
-	        console.log('child vm: ', this);
 	        vm = new _main2.default({
 	            el: node,
 	            data: data

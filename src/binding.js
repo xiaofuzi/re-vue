@@ -1,6 +1,6 @@
 import { directiveParser } from './parser.js';
 import { objectEach } from './utils.js';
-import { observer } from './observer.js';
+import { observer, arrayObserver } from './observer.js';
 import {
     objectGet,
     objectSet,
@@ -79,7 +79,11 @@ export default class Binding {
                     self.oldValue = self.value;
                     if (isArray) {
                         self.value = value;
-                        self.update(value);
+
+                        arrayObserver(self.value, ()=>{
+                            self.update();
+                        });
+                        self.update(self.value);
                     } else if (isObj) {
                         for (let prop in value) {
                             self.value[prop] = value[prop];

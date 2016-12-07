@@ -31,8 +31,10 @@
         </div>
         <h2>v-for directive</h2>
         <div v-for='item in todos'>
-            <h2 v-text='counter'></h2>
-            <p v-text='item.text'></p>
+            <div>
+                <span v-text='$index'></span>
+                <span v-text='item.text'></span>
+            </div>
         </div>
     </div>
     <script src='../dist/tinyVue.js'></script>
@@ -58,8 +60,21 @@
                     },
                     {
                         text: 'hihihihi!'
+                    },
+                    {
+                        text: 'hihihihi!'
+                    },
+                    {
+                        text: 'hihihihi!'
+                    },
+                    {
+                        text: 'hihihihi!'
+                    },
+                    {
+                        text: 'hihihihi!'
                     }
-                ]
+                ],
+                items: [1,2,3,4,5,6]
             },
             computed: {
                 wellcome () {
@@ -89,12 +104,13 @@
             ready () {
                 let self = this;
                 self.hello = 'Ready, go!';
-                
+
                 setTimeout(function () {
                     self.hello = 'Done!';
-                    // self.todos = [{
-                    //     text: 'I\'m new here!'
-                    // }];
+                    self.todos.push({
+                        text: 'new messages'
+                    });
+                    self.todos.shift();
                 }, 3000)
             }
         }

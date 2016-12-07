@@ -43,9 +43,10 @@ export default {
         /**
          * array item data process
          */
-        let data = {};
+        let data = {
+            $index: index
+        };
         data[this.subKey] = item;
-        console.log('child vm: ', this);
         vm = new Vm({
             el: node,
             data: data

@@ -228,7 +228,6 @@ export default class Main {
             isParentVm = false;
         el.removeAttribute(prefix + '-' + directive.name);
         directive.el = el;
-        //console.log('directive: ', this, directive);
         let key = directive.key,
             binding = this._getBinding(this, key);
 
@@ -253,7 +252,6 @@ export default class Main {
             if (binding.isComputed) {
                 binding.directives.push(directive);
             } else {
-                console.log('directive: ', this, directive);
                 console.error(key + ' is not defined.');
             }
         } else {

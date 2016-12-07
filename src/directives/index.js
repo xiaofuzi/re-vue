@@ -9,7 +9,7 @@ export default {
      * 对应于 v-text 指令
      */
     text: function (value) {
-        this.el.textContent = value || '';
+        this.el.textContent = value === undefined ? '' : value;
     },
     /**
      * 对应于 v-model 指令
