@@ -10,6 +10,8 @@ import {
 
 const def = Object.defineProperty;
 
+let bindingId = 0;
+
 export default class Binding {
     constructor (vm, key, isComputed=false) {
         this.vm = vm;
@@ -28,7 +30,14 @@ export default class Binding {
         /**
          * init 
          */
-        this.defineReactive();
+        /**
+         * vm不存在的Binding可watch其它Binding从而触发更新
+         */
+        if (this.vm) {
+            this.defineReactive();
+        }
+
+        this.id = bindingId++;
     }
 
 
@@ -122,6 +131,8 @@ export default class Binding {
                 directive.update(value);
             }
         });
+
+        this._updateChildren();
     }
 
     refresh () {
@@ -137,6 +148,35 @@ export default class Binding {
         
         this.watches.forEach((cb)=>{
             cb.call(this.vm, this.value, this.oldValue);
+        });
+    }
+
+    add (childBinding) {
+        this.children.push(childBinding);
+        childBinding.parent = this;
+        childBinding.value = this.value;
+    }
+
+    appendTo (parentBinding) {
+        parentBinding.children.push(this);
+        this.parent = parentBinding;
+        this.value = parentBinding.value;
+    }
+
+    remove (childBinding) {
+        this.children = this.children.filter((child)=>{
+            return child.id != childBinding.id;
+        })
+    }
+
+    destroy () {
+        this.parent.remove(this);
+        this.parent = null;
+    }
+
+    _updateChildren () {
+        this.children.forEach((child)=>{
+            child.update(this.value);
         });
     }
 }

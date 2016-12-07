@@ -8,15 +8,15 @@ export default {
     bind () {
         this.parent = this.el.parentNode;
         this.startRef = document.createComment('Start of v-if-directive');
-        this.ref = document.createComment('End of v-if-directive');
+        this.endRef = document.createComment('End of v-if-directive');
 
         let next = this.el.nextSibling;
         if (next) {
             this.parent.insertBefore(this.startRef, next);
-            this.parent.insertBefore(this.ref, next);
+            this.parent.insertBefore(this.endRef, next);
         } else {
             this.parent.appendChild(this.startRef);
-            this.parent.appendChild(this.ref);
+            this.parent.appendChild(this.endRef);
         }
     },
     update (value) {
@@ -34,7 +34,7 @@ export default {
 
         let node = this.el,
             parentVm = this.vm;
-        this.parent.insertBefore(node, this.ref);
+        this.parent.insertBefore(node, this.endRef);
 
         let childVm = new Vm({
             el: node

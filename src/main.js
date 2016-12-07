@@ -15,7 +15,8 @@ import {
     isObject,
     isFunc,
     objectGet,
-    objectSet
+    objectSet,
+    defer
 } from './utils.js';
 
 
@@ -33,7 +34,6 @@ export default class Main {
         this.$parent = parent;
         this.$children = [];
         this.$id = vmId++;
-        this.$index = null;
         /**
          * @private
          */
@@ -96,6 +96,11 @@ export default class Main {
         });
     }
 
+    $destroy () {
+        this.remove();
+        this.$parent = null;
+    }
+
     /**
      * 生命周期函数
      */
@@ -117,11 +122,12 @@ export default class Main {
     appendTo (vm) {
         this.$parent = vm;
         vm.$children.push(this);
-        this.$index = vm.$children.length - 1;
     }
 
-    remove (index) {
-        this.$parent.$children.splice(this.$index, 1);
+    remove () {
+        this.$parent.$children = this.$parent.$children.filter((child)=>{
+            return child.$id != this.$id;
+        })
     }
 
     _initComputed () {
@@ -168,6 +174,13 @@ export default class Main {
         let self = this;
         let isCompiler = true;
 
+        /**
+         * 过滤注释节点
+         */
+        if (el.nodeType === 8) {
+            return ;
+        }
+
         if (el.nodeType === 3) {
             self._compileTextNode(el);
         } else if (el.attributes && el.attributes.length) {
@@ -185,10 +198,17 @@ export default class Main {
             });
         }
 
-        if (isCompiler&&el.childNodes.length) {
-            forEach(el.childNodes, function (child) {
+        let len = el.childNodes.length;
+        if (isCompiler&&len) {
+            el.index = 0;
+            for (; el.index < el.childNodes.length; el.index++) {
+                /**
+                 * el.index 表示当前第几个子元素,在_compileNode函数中可能会更改el的子元素结构，
+                 * 所以需要el.index来标识编译的节点索引
+                 */
+                let child = el.childNodes[el.index];
                 self._compileNode(child);
-            });
+            }
         }
     }
 
@@ -200,13 +220,15 @@ export default class Main {
      * bind directive
      */
     _bind (el, directive) {
+        let self = this,
+            isParentVm = false;
         el.removeAttribute(prefix + '-' + directive.name);
         directive.el = el;
 
         let key = directive.key,
-            binding = getBinding(this, key);
+            binding = this._getBinding(this, key);
 
-        console.log('parent binding: ', key, binding, this);
+        processBinding(key);
         /**
          * directive hook
          */
@@ -222,26 +244,42 @@ export default class Main {
 
             //get computed property key
             let computedKey = key.split('.')[0];
-            binding = getBinding(this, computedKey); 
+            binding = this._getBinding(this, computedKey);
+            console.log('computedKey: ', binding, this, key); 
+            processBinding(computedKey);
             if (binding.isComputed) {
                 binding.directives.push(directive);
             } else {
                 console.error(key + ' is not defined.');
             }
-        } 
+        } else {
+            binding.directives.push(directive);
+        }
         
-        binding.directives.push(directive);
-
         /**
          * 子 vm bingding时更新DOM
          */
-        if (this.$parent&&!this._bindings[key]) {
+        if (isParentVm) {
             binding.update();
+        }
+
+        function processBinding (key) {
+            /**
+             * 根据model值是否在当前viewModel从而做不同的处理
+             */
+            if (binding === true) {
+                binding = self._bindings[key];
+            } else if (isObject(binding)) {
+                isParentVm = true;
+                let parentBinding = binding.binding;
+                binding = self._createBinding(key);
+                binding.appendTo(parentBinding);
+            }
         }
     } 
 
-    _createBinding (key) {
-        this._bindings[key] = new Binding(this, key);
+    _createBinding (key, ctx) {
+        this._bindings[key] = new Binding(ctx||this, key);
         return this._bindings[key];
     }
 
@@ -268,6 +306,30 @@ export default class Main {
         }
 
         return binding;
+    }
+
+    /**
+     * vm binding 获取，支持继承
+    */
+    _getBinding (vm, key) {
+        if (this._bindings[key]) {
+            return true;
+        }
+
+        if (!vm) {
+            return false;
+        }
+
+        let binding = vm._bindings[key];
+        if (binding) {
+            return {
+                binding: binding,
+                vm: vm,
+                key: key
+            }
+        } else {
+            return this._getBinding(vm.$parent, key);
+        }
     }
 
     $get (path) {
@@ -297,21 +359,7 @@ function getAttributes (attributes) {
     });
 }
 
-/**
- * vm binding 获取，支持继承
- */
-function getBinding (vm, key) {
-    if (!vm) {
-        return ;
-    }
 
-    let binding = vm._bindings[key];
-    if (binding) {
-        return binding;
-    } else {
-        return getBinding(vm.$parent, key);
-    }
-}
 
 
 

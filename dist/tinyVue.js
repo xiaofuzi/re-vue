@@ -119,19 +119,19 @@
 	
 	var _binding3 = _interopRequireDefault(_binding2);
 	
-	var _watcher = __webpack_require__(13);
+	var _watcher = __webpack_require__(14);
 	
 	var _watcher2 = _interopRequireDefault(_watcher);
 	
 	var _parser = __webpack_require__(5);
 	
-	var _observer = __webpack_require__(11);
+	var _observer = __webpack_require__(12);
 	
-	var _config = __webpack_require__(9);
+	var _config = __webpack_require__(10);
 	
 	var _config2 = _interopRequireDefault(_config);
 	
-	var _utils = __webpack_require__(10);
+	var _utils = __webpack_require__(11);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -160,7 +160,6 @@
 	        this.$parent = parent;
 	        this.$children = [];
 	        this.$id = vmId++;
-	        this.$index = null;
 	        /**
 	         * @private
 	         */
@@ -238,6 +237,12 @@
 	                _this2._initReactive(path, item);
 	            });
 	        }
+	    }, {
+	        key: '$destroy',
+	        value: function $destroy() {
+	            this.remove();
+	            this.$parent = null;
+	        }
 	
 	        /**
 	         * 生命周期函数
@@ -267,17 +272,20 @@
 	        value: function appendTo(vm) {
 	            this.$parent = vm;
 	            vm.$children.push(this);
-	            this.$index = vm.$children.length - 1;
 	        }
 	    }, {
 	        key: 'remove',
-	        value: function remove(index) {
-	            this.$parent.$children.splice(this.$index, 1);
+	        value: function remove() {
+	            var _this3 = this;
+	
+	            this.$parent.$children = this.$parent.$children.filter(function (child) {
+	                return child.$id != _this3.$id;
+	            });
 	        }
 	    }, {
 	        key: '_initComputed',
 	        value: function _initComputed() {
-	            var _this3 = this;
+	            var _this4 = this;
 	
 	            /**
 	             * computed 属性预处理
@@ -291,12 +299,12 @@
 	                    return 'continue';
 	                }
 	                var binding = void 0;
-	                if (_this3._bindings[key]) {
+	                if (_this4._bindings[key]) {
 	                    console.warn('Can not redefine ' + key + ' property.');
 	                } else {
 	                    var isComputed = true;
-	                    binding = new _binding3.default(_this3, key, isComputed);
-	                    _this3._bindings[key] = binding;
+	                    binding = new _binding3.default(_this4, key, isComputed);
+	                    _this4._bindings[key] = binding;
 	                }
 	
 	                /**
@@ -305,7 +313,7 @@
 	                var watcher = new _watcher2.default(binding);
 	                _observer.observer.isObserving = true;
 	                watcher.getDeps();
-	                computedGetter.call(_this3);
+	                computedGetter.call(_this4);
 	                _observer.observer.isObserving = false;
 	                watcher.watch();
 	
@@ -329,6 +337,13 @@
 	            var self = this;
 	            var isCompiler = true;
 	
+	            /**
+	             * 过滤注释节点
+	             */
+	            if (el.nodeType === 8) {
+	                return;
+	            }
+	
 	            if (el.nodeType === 3) {
 	                self._compileTextNode(el);
 	            } else if (el.attributes && el.attributes.length) {
@@ -346,10 +361,17 @@
 	                });
 	            }
 	
-	            if (isCompiler && el.childNodes.length) {
-	                (0, _utils.forEach)(el.childNodes, function (child) {
+	            var len = el.childNodes.length;
+	            if (isCompiler && len) {
+	                el.index = 0;
+	                for (; el.index < el.childNodes.length; el.index++) {
+	                    /**
+	                     * el.index 表示当前第几个子元素,在_compileNode函数中可能会更改el的子元素结构，
+	                     * 所以需要el.index来标识编译的节点索引
+	                     */
+	                    var child = el.childNodes[el.index];
 	                    self._compileNode(child);
-	                });
+	                }
 	            }
 	        }
 	    }, {
@@ -365,13 +387,15 @@
 	    }, {
 	        key: '_bind',
 	        value: function _bind(el, directive) {
+	            var self = this,
+	                isParentVm = false;
 	            el.removeAttribute(prefix + '-' + directive.name);
 	            directive.el = el;
 	
 	            var key = directive.key,
-	                binding = getBinding(this, key);
+	                binding = this._getBinding(this, key);
 	
-	            console.log('parent binding: ', key, binding, this);
+	            processBinding(key);
 	            /**
 	             * directive hook
 	             */
@@ -387,27 +411,43 @@
 	
 	                //get computed property key
 	                var computedKey = key.split('.')[0];
-	                binding = getBinding(this, computedKey);
+	                binding = this._getBinding(this, computedKey);
+	                console.log('computedKey: ', binding, this, key);
+	                processBinding(computedKey);
 	                if (binding.isComputed) {
 	                    binding.directives.push(directive);
 	                } else {
 	                    console.error(key + ' is not defined.');
 	                }
+	            } else {
+	                binding.directives.push(directive);
 	            }
-	
-	            binding.directives.push(directive);
 	
 	            /**
 	             * 子 vm bingding时更新DOM
 	             */
-	            if (this.$parent && !this._bindings[key]) {
+	            if (isParentVm) {
 	                binding.update();
+	            }
+	
+	            function processBinding(key) {
+	                /**
+	                 * 根据model值是否在当前viewModel从而做不同的处理
+	                 */
+	                if (binding === true) {
+	                    binding = self._bindings[key];
+	                } else if ((0, _utils.isObject)(binding)) {
+	                    isParentVm = true;
+	                    var parentBinding = binding.binding;
+	                    binding = self._createBinding(key);
+	                    binding.appendTo(parentBinding);
+	                }
 	            }
 	        }
 	    }, {
 	        key: '_createBinding',
-	        value: function _createBinding(key) {
-	            this._bindings[key] = new _binding3.default(this, key);
+	        value: function _createBinding(key, ctx) {
+	            this._bindings[key] = new _binding3.default(ctx || this, key);
 	            return this._bindings[key];
 	        }
 	
@@ -418,7 +458,7 @@
 	    }, {
 	        key: '_initReactive',
 	        value: function _initReactive(path, value) {
-	            var _this4 = this;
+	            var _this5 = this;
 	
 	            var binding = void 0;
 	            if (this._bindings[path]) {
@@ -429,7 +469,7 @@
 	                binding = this._createBinding(path);
 	
 	                var bindings = (0, _utils.objectMap)(value, function (key, item) {
-	                    var childBinding = _this4._initReactive(path + '.' + key, item);
+	                    var childBinding = _this5._initReactive(path + '.' + key, item);
 	                    childBinding.parent = binding;
 	                    return childBinding;
 	                });
@@ -439,6 +479,33 @@
 	            }
 	
 	            return binding;
+	        }
+	
+	        /**
+	         * vm binding 获取，支持继承
+	        */
+	
+	    }, {
+	        key: '_getBinding',
+	        value: function _getBinding(vm, key) {
+	            if (this._bindings[key]) {
+	                return true;
+	            }
+	
+	            if (!vm) {
+	                return false;
+	            }
+	
+	            var binding = vm._bindings[key];
+	            if (binding) {
+	                return {
+	                    binding: binding,
+	                    vm: vm,
+	                    key: key
+	                };
+	            } else {
+	                return this._getBinding(vm.$parent, key);
+	            }
 	        }
 	    }, {
 	        key: '$get',
@@ -475,22 +542,6 @@
 	        };
 	    });
 	}
-	
-	/**
-	 * vm binding 获取，支持继承
-	 */
-	function getBinding(vm, key) {
-	    if (!vm) {
-	        return;
-	    }
-	
-	    var binding = vm._bindings[key];
-	    if (binding) {
-	        return binding;
-	    } else {
-	        return getBinding(vm.$parent, key);
-	    }
-	}
 
 /***/ },
 /* 4 */
@@ -506,13 +557,15 @@
 	
 	var _parser = __webpack_require__(5);
 	
-	var _utils = __webpack_require__(10);
+	var _utils = __webpack_require__(11);
 	
-	var _observer = __webpack_require__(11);
+	var _observer = __webpack_require__(12);
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
 	var def = Object.defineProperty;
+	
+	var bindingId = 0;
 	
 	var Binding = function () {
 	    function Binding(vm, key) {
@@ -536,7 +589,14 @@
 	        /**
 	         * init 
 	         */
-	        this.defineReactive();
+	        /**
+	         * vm不存在的Binding可watch其它Binding从而触发更新
+	         */
+	        if (this.vm) {
+	            this.defineReactive();
+	        }
+	
+	        this.id = bindingId++;
 	    }
 	
 	    _createClass(Binding, [{
@@ -635,6 +695,8 @@
 	                    directive.update(value);
 	                }
 	            });
+	
+	            this._updateChildren();
 	        }
 	    }, {
 	        key: 'refresh',
@@ -653,6 +715,42 @@
 	
 	            this.watches.forEach(function (cb) {
 	                cb.call(_this.vm, _this.value, _this.oldValue);
+	            });
+	        }
+	    }, {
+	        key: 'add',
+	        value: function add(childBinding) {
+	            this.children.push(childBinding);
+	            childBinding.parent = this;
+	            childBinding.value = this.value;
+	        }
+	    }, {
+	        key: 'appendTo',
+	        value: function appendTo(parentBinding) {
+	            parentBinding.children.push(this);
+	            this.parent = parentBinding;
+	            this.value = parentBinding.value;
+	        }
+	    }, {
+	        key: 'remove',
+	        value: function remove(childBinding) {
+	            this.children = this.children.filter(function (child) {
+	                return child.id != childBinding.id;
+	            });
+	        }
+	    }, {
+	        key: 'destroy',
+	        value: function destroy() {
+	            this.parent.remove(this);
+	            this.parent = null;
+	        }
+	    }, {
+	        key: '_updateChildren',
+	        value: function _updateChildren() {
+	            var _this2 = this;
+	
+	            this.children.forEach(function (child) {
+	                child.update(_this2.value);
 	            });
 	        }
 	    }]);
@@ -697,7 +795,7 @@
 	
 	var _index2 = _interopRequireDefault(_index);
 	
-	var _config = __webpack_require__(9);
+	var _config = __webpack_require__(10);
 	
 	var _config2 = _interopRequireDefault(_config);
 	
@@ -786,7 +884,7 @@
 	
 	var _vIf2 = _interopRequireDefault(_vIf);
 	
-	var _vFor = __webpack_require__(14);
+	var _vFor = __webpack_require__(9);
 	
 	var _vFor2 = _interopRequireDefault(_vFor);
 	
@@ -881,15 +979,15 @@
 	    bind: function bind() {
 	        this.parent = this.el.parentNode;
 	        this.startRef = document.createComment('Start of v-if-directive');
-	        this.ref = document.createComment('End of v-if-directive');
+	        this.endRef = document.createComment('End of v-if-directive');
 	
 	        var next = this.el.nextSibling;
 	        if (next) {
 	            this.parent.insertBefore(this.startRef, next);
-	            this.parent.insertBefore(this.ref, next);
+	            this.parent.insertBefore(this.endRef, next);
 	        } else {
 	            this.parent.appendChild(this.startRef);
-	            this.parent.appendChild(this.ref);
+	            this.parent.appendChild(this.endRef);
 	        }
 	    },
 	    update: function update(value) {
@@ -907,7 +1005,7 @@
 	
 	        var node = this.el,
 	            parentVm = this.vm;
-	        this.parent.insertBefore(node, this.ref);
+	        this.parent.insertBefore(node, this.endRef);
 	
 	        var childVm = new _main2.default({
 	            el: node
@@ -924,6 +1022,80 @@
 
 /***/ },
 /* 9 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	
+	var _main = __webpack_require__(3);
+	
+	var _main2 = _interopRequireDefault(_main);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	/**
+	 * v-for directive
+	 */
+	exports.default = {
+	    /**
+	     * 单独进行编译
+	     */
+	    isBlock: true,
+	    bind: function bind() {
+	        this.parent = this.el.parentNode;
+	        this.startRef = document.createComment('Start of v-for-directive');
+	        this.endRef = document.createComment('End of v-for-directive');
+	
+	        var next = this.el.nextSibling;
+	        if (next) {
+	            this.parent.insertBefore(this.startRef, next);
+	            this.parent.insertBefore(this.endRef, next);
+	        } else {
+	            this.parent.appendChild(this.startRef);
+	            this.parent.appendChild(this.endRef);
+	        }
+	
+	        this.parent.removeChild(this.el);
+	        this.parent.index++;
+	
+	        this.$childElements = [];
+	    },
+	    update: function update() {
+	        var _this = this;
+	
+	        var arr = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
+	
+	        this.bodyArray = arr;
+	        arr.forEach(function (item, index) {
+	            _this.createChildInstance(item, index);
+	        });
+	    },
+	    createChildInstance: function createChildInstance(item, index) {
+	        var vm = void 0,
+	            node = this.el.cloneNode(true);
+	
+	        this.parent.insertBefore(node, this.endRef);
+	        this.parent.index++;
+	
+	        vm = new _main2.default({
+	            el: node
+	        }, this.vm);
+	        vm.__proto__ = this.$vm;
+	
+	        vm.appendTo(this.vm);
+	        console.log('child vm: ', vm);
+	        this.$childElements[index] = node;
+	    },
+	    unbind: function unbind() {
+	        if (this.bodyArray) {}
+	    }
+	};
+
+/***/ },
+/* 10 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -936,7 +1108,7 @@
 	};
 
 /***/ },
-/* 10 */
+/* 11 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -957,6 +1129,7 @@
 	exports.objectMap = objectMap;
 	exports.objectGet = objectGet;
 	exports.objectSet = objectSet;
+	exports.defer = defer;
 	/**
 	 * type
 	 */
@@ -1080,9 +1253,17 @@
 	        objectSet(obj[path[0]], path.slice(1).join('.'), value);
 	    }
 	};
+	
+	function defer(fn) {
+	    var Timer = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
+	
+	    setTimeout(function () {
+	        fn();
+	    }, Timer);
+	}
 
 /***/ },
-/* 11 */
+/* 12 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1092,7 +1273,7 @@
 	});
 	exports.arrayObserver = exports.observer = undefined;
 	
-	var _event = __webpack_require__(12);
+	var _event = __webpack_require__(13);
 	
 	var _event2 = _interopRequireDefault(_event);
 	
@@ -1128,7 +1309,7 @@
 	exports.arrayObserver = arrayObserver;
 
 /***/ },
-/* 12 */
+/* 13 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -1240,7 +1421,7 @@
 	exports.default = Event;
 
 /***/ },
-/* 13 */
+/* 14 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1251,7 +1432,7 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _observer = __webpack_require__(11);
+	var _observer = __webpack_require__(12);
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
@@ -1299,86 +1480,6 @@
 	}();
 	
 	exports.default = Watcher;
-
-/***/ },
-/* 14 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-	
-	var _main = __webpack_require__(3);
-	
-	var _main2 = _interopRequireDefault(_main);
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
-	/**
-	 * v-for directive
-	 */
-	exports.default = {
-	    /**
-	     * 单独进行编译
-	     */
-	    isBlock: true,
-	    bind: function bind() {
-	        this.parent = this.el.parentNode;
-	        this.startRef = document.createComment('Start of v-for-directive');
-	        this.container = document.createElement('div');
-	        this.endRef = document.createComment('End of v-for-directive');
-	
-	        var next = this.el.nextSibling;
-	        if (next) {
-	            this.parent.insertBefore(this.startRef, next);
-	            this.parent.insertBefore(this.container, next);
-	            this.parent.insertBefore(this.endRef, next);
-	        } else {
-	            this.parent.appendChild(this.startRef);
-	            this.parent.appendChild(this.container);
-	            this.parent.appendChild(this.endRef);
-	        }
-	
-	        this.parent.removeChild(this.el);
-	        /**
-	         * vfor vm instance
-	         */
-	        this.$vm = new _main2.default({
-	            el: this.container
-	        });
-	        this.$vm.appendTo(this.vm);
-	        console.log('this.$vm: ', this.$vm);
-	        this.$childElements = [];
-	    },
-	    update: function update() {
-	        var _this = this;
-	
-	        var arr = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
-	
-	        arr.forEach(function (item, index) {
-	            _this.createChildInstance(item, index);
-	        });
-	    },
-	    createChildInstance: function createChildInstance(item, index) {
-	        var vm = void 0,
-	            node = this.el.cloneNode(true);
-	
-	        this.container.appendChild(node);
-	        vm = new _main2.default({
-	            el: node
-	        }, this.$vm);
-	        vm.__proto__ = this.$vm;
-	
-	        vm.$parent = this.$vm;
-	        this.$vm.$children[index] = vm;
-	        vm.$index = this.$vm.$children.length - 1;
-	
-	        console.log('vfor item: ', vm);
-	        this.$childElements[index] = node;
-	    }
-	};
 
 /***/ }
 /******/ ]);

@@ -22,17 +22,16 @@
         <h2 v-text='hello' v-visible='isShow'></h2>
         <input type="text" v-model='counter'>
         <button v-on:click='add' type="button">add</button>        
-        <button v-on:click='toggle' type="button">toggle</button> 
+        <button v-on:click='toggle' type="button">toggle</button>
+        <p v-text='counter'></p>
+        <p v-text='info.age'></p>
         <p v-text='wellcome.text'></p>
         <div v-if='isShow'>
-            <p v-text='counter'></p>
             <p v-text='info.age'></p>
         </div>
         <div v-for='todos'>
             <p v-text='counter'></p>
-            <p v-text='info.age'></p>
         </div>
-
     </div>
     <script src='../dist/tinyVue.js'></script>
     <!-- <script src='http://cdn.bootcss.com/vue/1.0.26/vue.js'></script> -->
@@ -41,7 +40,7 @@
         var opts = {
             el: '#app',
             data: {
-                isShow: false,
+                isShow: true,
                 counter: 1,
                 hello: 'ahahah!',
                 info: {

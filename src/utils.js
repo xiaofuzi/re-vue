@@ -96,3 +96,9 @@ export function objectSet (obj, path='', value) {
         objectSet(obj[path[0]], path.slice(1).join('.'), value);
     }
 };
+
+export function defer (fn, Timer=0) {
+    setTimeout(()=>{
+        fn();
+    }, Timer);
+}
