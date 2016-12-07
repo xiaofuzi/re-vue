@@ -16,7 +16,9 @@ import {
     isFunc,
     objectGet,
     objectSet,
-    defer
+    defer,
+    toCamels,
+    toLineStr
 } from './utils.js';
 
 
@@ -33,6 +35,7 @@ export default class Main {
         this.$el = typeof opts.el === 'string' ? document.querySelector(opts.el) : opts.el;
         this.$parent = parent;
         this.$children = [];
+        this.$components = [];
         this.$id = vmId++;
         /**
          * @private
@@ -52,6 +55,12 @@ export default class Main {
      */
     init () {
         let self = this;
+
+        /**
+         * components 数据挂载
+         */
+        this.components = this._opts.components;
+
         let _data = this._bindingData = extend(this._opts.data, this._opts.methods, true);
         objectEach(_data, (path, item)=>{
             this._initReactive(path, item);
@@ -123,6 +132,9 @@ export default class Main {
     /**
      * @private
      */
+    /**
+     * viewModel树形结构
+     */
     appendTo (vm) {
         this.$parent = vm;
         vm.$children.push(this);
@@ -132,6 +144,13 @@ export default class Main {
         this.$parent.$children = this.$parent.$children.filter((child)=>{
             return child.$id != this.$id;
         })
+    }
+
+    /**
+     * 组件树结构
+     */
+    addComponent (component) {
+        this.$components.push(component);
     }
 
     _initComputed () {
@@ -179,8 +198,22 @@ export default class Main {
         let isCompiler = true;
 
         /**
+         * 子组件处理
+         */
+        let nodeName = el.nodeName.toLowerCase();
+        if (this.components) {
+            let component = this.components[toCamels(nodeName)] || this.components[nodeName];
+            if (component) {
+                this._compilerComponent(el, component);
+
+                return ;
+            }
+        }
+
+        /**
          * 过滤注释节点
          */
+
         if (el.nodeType === 8) {
             return ;
         }
@@ -218,6 +251,20 @@ export default class Main {
 
     _compileTextNode (el) {
         return el;
+    }
+
+    _compilerComponent (el, component) {
+        let parent = el.parentNode,
+            container = document.createElement('div'),
+            conponentInstance;
+
+        parent.insertBefore(container, el);
+        parent.removeChild(el);
+        console.log('parent component: ', parent);
+        container.innerHTML = component.template;
+        component.el = container;
+
+        conponentInstance = new Main(component);
     }
 
     /**

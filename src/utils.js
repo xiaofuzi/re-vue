@@ -14,6 +14,41 @@ export function isFunc (obj) {
     return typeOf(obj) === 'Function' ? true : false;
 }
 
+/**********************************************
+ * 字符串处理
+ */
+export function toCamels(str) {
+    let strArr = str.split('-'),
+        newStr = '';
+
+    strArr.forEach((s, index)=>{
+        let firstChar = '';
+        
+        if (index) {
+            firstChar = s[0].toUpperCase();
+        } else {
+            firstChar = s[0].toLowerCase();
+        }
+        newStr += firstChar;
+        newStr += s.substring(1);
+    });
+    return newStr;
+}
+
+export function toLineStr (str) {
+    str = str.toLowerCase();
+    let newStr = '';
+    for(let i = 0; i < str.length; i++) {
+        if (str[i]>= 'A'&& str[i]<='Z') {
+            newStr += '-';
+            newStr += str[i].toLowerCase();
+        } else {
+            newStr += str[i];
+        }
+    }
+    return newStr;
+}
+
 /*******************************************************
  * 数组相关
  */

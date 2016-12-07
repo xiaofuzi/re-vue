@@ -159,6 +159,7 @@
 	        this.$el = typeof opts.el === 'string' ? document.querySelector(opts.el) : opts.el;
 	        this.$parent = parent;
 	        this.$children = [];
+	        this.$components = [];
 	        this.$id = vmId++;
 	        /**
 	         * @private
@@ -184,6 +185,12 @@
 	            var _this = this;
 	
 	            var self = this;
+	
+	            /**
+	             * components 数据挂载
+	             */
+	            this.components = this._opts.components;
+	
 	            var _data = this._bindingData = (0, _utils.extend)(this._opts.data, this._opts.methods, true);
 	            (0, _utils.objectEach)(_data, function (path, item) {
 	                _this._initReactive(path, item);
@@ -270,6 +277,9 @@
 	        /**
 	         * @private
 	         */
+	        /**
+	         * viewModel树形结构
+	         */
 	
 	    }, {
 	        key: 'appendTo',
@@ -285,6 +295,16 @@
 	            this.$parent.$children = this.$parent.$children.filter(function (child) {
 	                return child.$id != _this3.$id;
 	            });
+	        }
+	
+	        /**
+	         * 组件树结构
+	         */
+	
+	    }, {
+	        key: 'addComponent',
+	        value: function addComponent(component) {
+	            this.$components.push(component);
 	        }
 	    }, {
 	        key: '_initComputed',
@@ -342,8 +362,22 @@
 	            var isCompiler = true;
 	
 	            /**
+	             * 子组件处理
+	             */
+	            var nodeName = el.nodeName.toLowerCase();
+	            if (this.components) {
+	                var component = this.components[(0, _utils.toCamels)(nodeName)] || this.components[nodeName];
+	                if (component) {
+	                    this._compilerComponent(el, component);
+	
+	                    return;
+	                }
+	            }
+	
+	            /**
 	             * 过滤注释节点
 	             */
+	
 	            if (el.nodeType === 8) {
 	                return;
 	            }
@@ -382,6 +416,21 @@
 	        key: '_compileTextNode',
 	        value: function _compileTextNode(el) {
 	            return el;
+	        }
+	    }, {
+	        key: '_compilerComponent',
+	        value: function _compilerComponent(el, component) {
+	            var parent = el.parentNode,
+	                container = document.createElement('div'),
+	                conponentInstance = void 0;
+	
+	            parent.insertBefore(container, el);
+	            parent.removeChild(el);
+	            console.log('parent component: ', parent);
+	            container.innerHTML = component.template;
+	            component.el = container;
+	
+	            conponentInstance = new Main(component);
 	        }
 	
 	        /**
@@ -1155,6 +1204,8 @@
 	exports.typeOf = typeOf;
 	exports.isObject = isObject;
 	exports.isFunc = isFunc;
+	exports.toCamels = toCamels;
+	exports.toLineStr = toLineStr;
 	exports.forEach = forEach;
 	exports.map = map;
 	exports.extend = extend;
@@ -1177,6 +1228,41 @@
 	
 	function isFunc(obj) {
 	    return typeOf(obj) === 'Function' ? true : false;
+	}
+	
+	/**********************************************
+	 * 字符串处理
+	 */
+	function toCamels(str) {
+	    var strArr = str.split('-'),
+	        newStr = '';
+	
+	    strArr.forEach(function (s, index) {
+	        var firstChar = '';
+	
+	        if (index) {
+	            firstChar = s[0].toUpperCase();
+	        } else {
+	            firstChar = s[0].toLowerCase();
+	        }
+	        newStr += firstChar;
+	        newStr += s.substring(1);
+	    });
+	    return newStr;
+	}
+	
+	function toLineStr(str) {
+	    str = str.toLowerCase();
+	    var newStr = '';
+	    for (var i = 0; i < str.length; i++) {
+	        if (str[i] >= 'A' && str[i] <= 'Z') {
+	            newStr += '-';
+	            newStr += str[i].toLowerCase();
+	        } else {
+	            newStr += str[i];
+	        }
+	    }
+	    return newStr;
 	}
 	
 	/*******************************************************

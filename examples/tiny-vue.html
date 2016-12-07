@@ -36,11 +36,19 @@
                 <span v-text='item.text'></span>
             </div>
         </div>
+        <h2 v-text='hello'></h2>
+        <sub-component></sub-component>
     </div>
     <script src='../dist/tinyVue.js'></script>
     <!-- <script src='http://cdn.bootcss.com/vue/1.0.26/vue.js'></script> -->
     <script>
         var mvvm;
+        var subComponent = {
+            template: '<div><h2 v-text="name"></h2></div>',
+            data: {
+                name: 'an new component!'
+            }
+        }
         var opts = {
             el: '#app',
             data: {
@@ -80,6 +88,9 @@
                 wellcome () {
                     return {text: this.hello + '---' + this.info.age};
                 }
+            },
+            components: {
+                subComponent: subComponent
             },
             methods: {
                 add: function () {
