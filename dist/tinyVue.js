@@ -137,6 +137,10 @@
 	
 	var _observer = __webpack_require__(12);
 	
+	var _component = __webpack_require__(15);
+	
+	var _component2 = _interopRequireDefault(_component);
+	
 	var _config = __webpack_require__(10);
 	
 	var _config2 = _interopRequireDefault(_config);
@@ -171,7 +175,8 @@
 	        this.$children = [];
 	        this.$components = [];
 	        this.$id = vmId++;
-	
+	        this.$name = opts.name || 'vm';
+	        this.$isComponent = opts.isComponent || false;
 	        /**
 	         * @private
 	         */
@@ -216,6 +221,8 @@
 	            });
 	
 	            this._initComputed();
+	
+	            this._initProps();
 	            /**
 	             * 指令处理
 	             */
@@ -227,6 +234,13 @@
 	            for (var key in this._bindings) {
 	                this.$set(key, (0, _utils.objectGet)(_data, key));
 	            }
+	
+	            /**
+	             * props 初始化
+	             */
+	            (0, _utils.objectEach)(this.$props, function (key, item) {
+	                _this[key] = item;
+	            });
 	
 	            /**
 	             * watch 函数注册
@@ -259,7 +273,7 @@
 	
 	            var obj = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 	
-	            (0, _utils.objectEach)(_data, function (path, item) {
+	            (0, _utils.objectEach)(obj, function (path, item) {
 	                _this2._initReactive(path, item);
 	            });
 	        }
@@ -324,6 +338,20 @@
 	        key: 'addComponent',
 	        value: function addComponent(component) {
 	            this.$components.push(component);
+	            component.$parent = this;
+	        }
+	    }, {
+	        key: '_initProps',
+	        value: function _initProps() {
+	            /**
+	             * props process
+	             */
+	            var propsData = _component2.default.propsProcess(this._opts, this);
+	            if (propsData) {
+	                this.$reactive(propsData);
+	
+	                this.$props = propsData;
+	            }
 	        }
 	    }, {
 	        key: '_initComputed',
@@ -441,34 +469,8 @@
 	        }
 	    }, {
 	        key: '_compilerComponent',
-	        value: function _compilerComponent(el, component) {
-	            var parent = el.parentNode,
-	                container = document.createElement('div'),
-	                next = el.nextSibling,
-	                startRef = document.createComment('Start of v-component'),
-	                endRef = document.createComment('End of v-component'),
-	                conponentInstance = void 0;
-	
-	            if (next) {
-	                parent.insertBefore(startRef, next);
-	                parent.insertBefore(endRef, next);
-	            } else {
-	                parent.appendChild(startRef);
-	                parent.appendChild(endRef);
-	            }
-	
-	            parent.insertBefore(container, endRef);
-	            parent.removeChild(el);
-	
-	            /**
-	             * 父节点遍历标识更新
-	             */
-	            parent.index += 2;
-	
-	            container.innerHTML = component.template;
-	            component.el = container;
-	
-	            conponentInstance = new Main(component);
+	        value: function _compilerComponent(el, componentOpts) {
+	            _component2.default.compilerComponent(el, componentOpts, this);
 	        }
 	
 	        /**
@@ -492,7 +494,6 @@
 	            if (directive.bind) {
 	                directive.bind();
 	            }
-	
 	            if (!binding) {
 	                /**
 	                 * computed property binding hack
@@ -506,7 +507,7 @@
 	                if (binding.isComputed) {
 	                    binding.directives.push(directive);
 	                } else {
-	                    console.error(key + ' is not defined.');
+	                    console.error(key + ' is not defined in ' + this.$name + ' component.');
 	                }
 	            } else {
 	                binding.directives.push(directive);
@@ -551,9 +552,9 @@
 	
 	            var binding = void 0;
 	            if (this._bindings[path]) {
+	                console.warn(path + ' binding had created.');
 	                return;
 	            }
-	
 	            if ((0, _utils.isObject)(value)) {
 	                binding = this._createBinding(path);
 	
@@ -579,6 +580,11 @@
 	        value: function _getBinding(vm, key) {
 	            if (this._bindings[key]) {
 	                return true;
+	            } else if (this.$isComponent) {
+	                /**
+	                 * 父子组件vm隔离
+	                 */
+	                return false;
 	            }
 	
 	            if (!vm) {
@@ -648,6 +654,12 @@
 	}
 	
 	function getComponents(vm) {
+	    /**
+	     * 子组件与父组件式隔离作用域的，所以不会获取父组件的vm
+	     */
+	    if (vm.$isComponent) {
+	        return vm.components;
+	    }
 	    if (vm.$parent) {
 	        return getComponents(vm.$parent);
 	    } else {
@@ -749,7 +761,13 @@
 	                set: function set(value) {
 	                    if (value !== self.value) {
 	                        self.oldValue = self.value;
-	                        if (isArray) {
+	                        /**
+	                         * 考虑到原始类型与赋值类型的不同
+	                         */
+	                        if (typeof value === 'string') {
+	                            self.value = value;
+	                            self.update(value);
+	                        } else if (isArray) {
 	                            self.value = value;
 	
 	                            (0, _observer.arrayObserver)(self.value, function () {
@@ -1660,6 +1678,141 @@
 	}();
 	
 	exports.default = Watcher;
+
+/***/ },
+/* 15 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+	
+	var _main = __webpack_require__(3);
+	
+	var _main2 = _interopRequireDefault(_main);
+	
+	var _utils = __webpack_require__(11);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	exports.default = {
+	    compilerComponent: function compilerComponent(el, component, vm) {
+	        var parent = el.parentNode,
+	            container = document.createElement('div'),
+	            next = el.nextSibling,
+	            startRef = document.createComment('Start of v-component'),
+	            endRef = document.createComment('End of v-component'),
+	            componentInstance = void 0;
+	
+	        if (next) {
+	            parent.insertBefore(startRef, next);
+	            parent.insertBefore(endRef, next);
+	        } else {
+	            parent.appendChild(startRef);
+	            parent.appendChild(endRef);
+	        }
+	
+	        /**
+	         * store el
+	         */
+	        this.el = el.cloneNode(true);
+	        parent.removeChild(el);
+	        parent.insertBefore(container, endRef);
+	
+	        /**
+	         * 父节点遍历标识更新
+	         */
+	        parent.index += 2;
+	
+	        container.innerHTML = component.template;
+	        component.el = container;
+	
+	        var componentName = (0, _utils.toLineStr)(el.nodeName.toLowerCase());
+	        component.name = componentName;
+	        component.isComponent = true;
+	
+	        componentInstance = new _main2.default(component, vm);
+	
+	        vm.addComponent(componentInstance);
+	    },
+	    propsProcess: function propsProcess() {
+	        var _this = this;
+	
+	        var opts = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+	        var vm = arguments[1];
+	
+	        if (!vm.$parent && opts.props) {
+	            console.warn('Can not set props for root component.');
+	        }
+	        if (opts.props) {
+	            var _ret = function () {
+	                /**
+	                 * 数组声明形式
+	                 */
+	                var props = {},
+	                    processProps = {},
+	                    el = _this.el;
+	                if (Array.isArray(opts.props)) {
+	                    opts.props.forEach(function (prop) {
+	                        props[prop] = {
+	                            required: false,
+	                            defaultValue: ''
+	                        };
+	                    });
+	                } else {
+	                    /**
+	                     * 对象声明形式
+	                     */
+	                    props = opts.props;
+	                }
+	
+	                (0, _utils.map)(el.attributes, function (attribute) {
+	                    /**
+	                     * 静态props处理
+	                     */
+	                    var name = attribute.name,
+	                        value = attribute.value;
+	
+	                    if (props[name]) {
+	                        processProps[name] = value;
+	                    } else {
+	                        (function () {
+	                            /**
+	                             * 动态props
+	                             */
+	                            var attr = '';
+	                            if (name[0] === ':') {
+	                                attr = name.substring(1);
+	                                if (props[attr]) {
+	                                    processProps[attr] = vm.$parent[value];
+	
+	                                    /**
+	                                     * watch change
+	                                     */
+	                                    vm.$parent.$watch(value, function () {
+	                                        vm[attr] = vm.$parent[value];
+	                                    });
+	                                }
+	                            }
+	                        })();
+	                    }
+	                });
+	
+	                vm.$props = processProps;
+	
+	                return {
+	                    v: processProps
+	                };
+	            }();
+	
+	            if ((typeof _ret === 'undefined' ? 'undefined' : _typeof(_ret)) === "object") return _ret.v;
+	        }
+	    }
+	};
 
 /***/ }
 /******/ ]);

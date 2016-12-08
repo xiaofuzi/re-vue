@@ -20,6 +20,7 @@
 <body>
     <div id="app">
         <h2 v-text='hello' v-visible='isShow'></h2>
+        <!---
         <input type="text" v-model='counter'>
         <button v-on:click='add' type="button">add</button>        
         <button v-on:click='toggle' type="button">toggle</button>
@@ -37,13 +38,12 @@
             </div>
         </div>
         <h2 v-text='hello'></h2>
-
+ -->
         <h2>SubComponent</h2>
-        <div v-for='item in todos'>
-            <sub-component />
-        </div>
-        <hello-world></hello-world>
-        <hello-world></hello-world>
+        <!-- <div v-for='item in todos'>
+        <sub-component info='messages'></sub-component>
+        </div> -->
+        <hello-world hello='hello' :msg='hello'></hello-world>
     </div>
     <script src='../dist/tinyVue.js'></script>
     <!-- <script src='http://cdn.bootcss.com/vue/1.0.26/vue.js'></script> -->
@@ -55,56 +55,58 @@
                 return {
                     name: 'an new component!'
                 }
-            }
+            },
+            props: ['info']
         }
 
         TinyVue.component('hello-world', {
-            template: '<div><h2 v-text="name"></h2></div>',
+            template: '<div><h2 v-text="hello"></h2><h3 v-text="msg"></h3></div>',
             data: function (){
                 return {
                     name: 'hello world component!'
                 }
-            }
+            },
+            props: ['hello', 'msg']
         });
         var opts = {
             el: '#app',
             data: {
-                isShow: true,
-                counter: 1,
-                hello: 'ahahah!',
-                info: {
-                    age: 18
-                },
-                person: {
-                    weight: 20,
-                    height: 170
-                },
-                todos: [
-                    {
-                        text: 'hello world!'
-                    },
-                    {
-                        text: 'hihihihi!'
-                    },
-                    {
-                        text: 'hihihihi!'
-                    },
-                    {
-                        text: 'hihihihi!'
-                    },
-                    {
-                        text: 'hihihihi!'
-                    },
-                    {
-                        text: 'hihihihi!'
-                    }
-                ],
-                items: [1,2,3,4,5,6]
+                // isShow: true,
+                // counter: 1,
+                 hello: 'ahahah!',
+                // info: {
+                //     age: 18
+                // },
+                // person: {
+                //     weight: 20,
+                //     height: 170
+                // },
+                // todos: [
+                //     {
+                //         text: 'hello world!'
+                //     },
+                //     {
+                //         text: 'hihihihi!'
+                //     },
+                //     {
+                //         text: 'hihihihi!'
+                //     },
+                //     {
+                //         text: 'hihihihi!'
+                //     },
+                //     {
+                //         text: 'hihihihi!'
+                //     },
+                //     {
+                //         text: 'hihihihi!'
+                //     }
+                // ],
+                // items: [1,2,3,4,5,6]
             },
             computed: {
-                wellcome () {
-                    return {text: this.hello + '---' + this.info.age};
-                }
+                // wellcome () {
+                //     return {text: this.hello + '---' + this.info.age};
+                // }
             },
             components: {
                 subComponent: subComponent
@@ -131,15 +133,15 @@
             },
             ready () {
                 let self = this;
-                self.hello = 'Ready, go!';
+                // self.hello = 'Ready, go!';
 
-                setTimeout(function () {
-                    self.hello = 'Done!';
-                    self.todos.push({
-                        text: 'new messages'
-                    });
-                    self.todos.shift();
-                }, 3000)
+                // setTimeout(function () {
+                //     self.hello = 'Done!';
+                //     self.todos.push({
+                //         text: 'new messages'
+                //     });
+                //     self.todos.shift();
+                // }, 3000)
             }
         }
 

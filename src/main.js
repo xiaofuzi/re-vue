@@ -2,6 +2,7 @@ import Binding from './binding.js';
 import Watcher from './watcher.js';
 import { DirectiveParser } from './parser.js';
 import { observer } from './observer.js';
+import ComponentParser from './component.js';
 
 import Config from './config.js';
 const { prefix } = Config;
@@ -37,7 +38,8 @@ export default class Main {
         this.$children = [];
         this.$components = [];
         this.$id = vmId++;
-
+        this.$name = opts.name || 'vm';
+        this.$isComponent = opts.isComponent || false;
         /**
          * @private
          */
@@ -78,6 +80,8 @@ export default class Main {
         });
 
         this._initComputed ();
+
+        this._initProps();
         /**
          * 指令处理
          */
@@ -89,6 +93,13 @@ export default class Main {
         for (let key in this._bindings) {
             this.$set(key, objectGet(_data, key));                
         }
+
+        /**
+         * props 初始化
+         */
+        objectEach(this.$props, (key, item)=>{
+            this[key] = item;
+        });
 
         /**
          * watch 函数注册
@@ -111,7 +122,7 @@ export default class Main {
      * turn an normal object to reactive obeject
      */
     $reactive (obj={}) {
-        objectEach(_data, (path, item)=>{
+        objectEach(obj, (path, item)=>{
             this._initReactive(path, item);
         });
     }
@@ -162,6 +173,19 @@ export default class Main {
      */
     addComponent (component) {
         this.$components.push(component);
+        component.$parent = this;
+    }
+
+    _initProps () {
+        /**
+         * props process
+         */
+        let propsData = ComponentParser.propsProcess(this._opts, this);
+        if (propsData) {
+            this.$reactive(propsData);
+            
+            this.$props = propsData;
+        }
     }
 
     _initComputed () {
@@ -267,34 +291,8 @@ export default class Main {
         return el;
     }
 
-    _compilerComponent (el, component) {
-        let parent = el.parentNode,
-            container = document.createElement('div'),
-            next = el.nextSibling,
-            startRef = document.createComment('Start of v-component'),
-            endRef = document.createComment('End of v-component'),
-            conponentInstance;
-
-        if (next) {
-            parent.insertBefore(startRef, next);
-            parent.insertBefore(endRef, next);
-        } else {
-            parent.appendChild(startRef);
-            parent.appendChild(endRef);
-        }
-
-        parent.insertBefore(container, endRef);
-        parent.removeChild(el);
-
-        /**
-         * 父节点遍历标识更新
-         */
-        parent.index += 2;
-
-        container.innerHTML = component.template;
-        component.el = container;
-
-        conponentInstance = new Main(component);
+    _compilerComponent (el, componentOpts) {
+        ComponentParser.compilerComponent(el, componentOpts, this);
     }
 
     /**
@@ -315,7 +313,6 @@ export default class Main {
         if (directive.bind) {
             directive.bind();
         }
-
         if (!binding) {
             /**
              * computed property binding hack
@@ -329,7 +326,7 @@ export default class Main {
             if (binding.isComputed) {
                 binding.directives.push(directive);
             } else {
-                console.error(key + ' is not defined.');
+                console.error(key + ' is not defined in ' + this.$name + ' component.');
             }
         } else {
             binding.directives.push(directive);
@@ -368,9 +365,9 @@ export default class Main {
     _initReactive (path, value) {
         let binding;
         if (this._bindings[path]) {
+            console.warn(path + ' binding had created.');
             return ;
         }
-
         if (isObject(value)) {
             binding = this._createBinding(path);
 
@@ -393,6 +390,11 @@ export default class Main {
     _getBinding (vm, key) {
         if (this._bindings[key]) {
             return true;
+        } else if (this.$isComponent) {
+            /**
+             * 父子组件vm隔离
+             */
+            return false;
         }
 
         if (!vm) {
@@ -454,6 +456,12 @@ function getComponent (vm, componentName) {
 }
 
 function getComponents (vm) {
+    /**
+     * 子组件与父组件式隔离作用域的，所以不会获取父组件的vm
+     */
+    if (vm.$isComponent) {
+        return vm.components;
+    }
     if (vm.$parent) {
         return getComponents(vm.$parent);
     } else {

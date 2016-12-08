@@ -77,7 +77,13 @@ export default class Binding {
             set (value) {
                 if (value !== self.value) {
                     self.oldValue = self.value;
-                    if (isArray) {
+                    /**
+                     * 考虑到原始类型与赋值类型的不同
+                     */
+                    if (typeof value === 'string') {
+                        self.value = value;
+                        self.update(value);
+                    } else if (isArray) {
                         self.value = value;
 
                         arrayObserver(self.value, ()=>{

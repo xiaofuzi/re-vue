@@ -15,7 +15,9 @@ rewrite vue.js.
 * 事件支持
 * watch监测
 * 生命周期函数
+* v-for指令支持
 * 自定义指令
+* 自定组件支持
 
 ### Usage
 
@@ -138,6 +140,7 @@ mvvm = new TinyVue(opts);
     * v-model
     * v-on
     * v-if
+    * v-for
 
 ### vm api
 
@@ -175,6 +178,12 @@ mvvm = new TinyVue(opts);
     vm.$directive('text', function (text) {
         this.el.textContent = text;
     });
+    ```
+
+    * component
+    定义全局组件
+    ```js
+    TinyVue.component(componentName, opts);
     ```
 
     * beforeCompiler
