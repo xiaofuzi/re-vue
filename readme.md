@@ -15,9 +15,9 @@ rewrite vue.js.
 * 事件支持
 * watch监测
 * 生命周期函数
-* v-for指令支持
+* 预定义指令
 * 自定义指令
-* 自定组件支持
+* 组件系统
 
 ### Usage
 
@@ -94,44 +94,105 @@ TinyVue.$directive('visible', function (value) {
 })
 mvvm = new TinyVue(opts);
 ```
+### 组件系统示例
+
+```html
+<div id="app">        
+    <h2>组件系统示例</h2>
+    <sub-component></sub-component>
+    <hello-world hello='hello world!' :msg='message'></hello-world>  
+</div>
+```
+
+```js
+var mvvm;
+var subComponent = {
+    template: '<div><h2 v-text="name"></h2></div>',
+    data: function (){
+        return {
+            name: 'an new component!'
+        }
+    },
+    props: ['info']
+}
+
+TinyVue.component('hello-world', {
+    template: '<div><h2 v-text="hello"></h2><h3 v-text="msg"></h3></div>',
+    data: function (){
+        return {
+            name: 'hello world component!'
+        }
+    },
+    props: ['hello', 'msg']
+});
+var opts = {
+    el: '#app',
+    data: {
+        message: 'the fast mvvm framework.'
+    },
+    computed: {
+        
+    },
+    components: {
+        subComponent: subComponent
+    },
+    methods: {
+        
+    },
+    watch: {
+        
+    },
+    ready () {
+        
+    }
+}
+
+mvvm = new TinyVue(opts);
+```
+
+这里定义了`<sub-component />`局部组件以及`<hello-world />`全局组件。
 
 ## API 
 
 ### options
 
-    * el
+* el
 
-    Type: `String | Node`
+Type: `String | Node`
 
-    根节点选择器或是根节点dom元素。
+根节点选择器或是根节点dom元素。
 
-    * data
+* template
+Type: `String`
+组件模板
 
-    Type: `Object`
+* data
 
-    初始化响应式数据模型
+Type: `Object`
 
-    * computed
+初始化响应式数据模型
 
-    Type: `Object`
+* computed
 
-    计算属性，每一个元素对应一个函数
+Type: `Object`
 
-    注：
-        * computed属性依赖于data中的响应式数据
-        * computed属性可依赖computed属性
-        * computed禁止赋值操作
+计算属性，每一个元素对应一个函数
 
-    * methods
+注：
+    * computed属性依赖于data中的响应式数据
+    * computed属性可依赖computed属性
+    * computed禁止赋值操作
 
-    Type: `Object`
-    每一个元素对应一个函数，支持响应式替换
+* methods
 
-    * watch
+Type: `Object`
+每一个元素对应一个函数，支持响应式替换
 
-    Type: `Object`
+* watch
 
-    监测对象，监测对应的响应式数据，当数据发生更改时执行回调.
+Type: `Object`
+
+监测对象，监测对应的响应式数据，当数据发生更改时执行回调.
 
 ### directives
     * v-text
@@ -142,12 +203,12 @@ mvvm = new TinyVue(opts);
     * v-if
     * v-for
 
-### vm api
+### 实例 api
 
-    * $watch
+* $watch
 
-    Type: `Function`
-    监测某一数据的响应式变化
+Type: `Function`
+监测某一数据的响应式变化
 
     如：
     ```js
@@ -167,11 +228,11 @@ mvvm = new TinyVue(opts);
     })
     ```
 
-    * $directive
+* $directive
 
-    Type: `Function`
+Type: `Function`
 
-    自定义指令
+自定义指令
 
     如：
     ```js
@@ -179,20 +240,22 @@ mvvm = new TinyVue(opts);
         this.el.textContent = text;
     });
     ```
+* $reactive
+将一个普通对象转换为一个响应式对象
 
-    * component
-    定义全局组件
+* component
+定义全局组件
     ```js
     TinyVue.component(componentName, opts);
     ```
 
-    * beforeCompiler
+* beforeCompiler
 
-    生命周期函数，编译前执行
+生命周期函数，编译前执行
 
-    * ready
+* ready
 
-    生命周期函数，渲染完毕后执行
+生命周期函数，渲染完毕后执行
 
 ### Install
 

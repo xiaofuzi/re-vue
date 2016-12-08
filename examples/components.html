@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>the super tiny vue.js</title>
+    <style type="text/css">
+        input {
+            outline: none;
+        }
+        #app {
+            width: 400px;
+            padding: 15px;
+            padding-top: 100px;
+            border: 1px solid #999;
+            margin: 0 auto;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">        
+        <h2>组件系统示例</h2>
+        <sub-component></sub-component>
+        <hello-world hello='hello world!' :msg='message'></hello-world>  
+    </div>
+    <script src='../dist/tinyVue.js'></script>
+    <script>
+        var mvvm;
+        var subComponent = {
+            template: '<div><h2 v-text="name"></h2></div>',
+            data: function (){
+                return {
+                    name: 'an new component!'
+                }
+            },
+            props: ['info']
+        }
+
+        TinyVue.component('hello-world', {
+            template: '<div><h2 v-text="hello"></h2><h3 v-text="msg"></h3></div>',
+            data: function (){
+                return {
+                    name: 'hello world component!'
+                }
+            },
+            props: ['hello', 'msg']
+        });
+        var opts = {
+            el: '#app',
+            data: {
+                message: 'the fast mvvm framework.'
+            },
+            computed: {
+                
+            },
+            components: {
+                subComponent: subComponent
+            },
+            methods: {
+                
+            },
+            watch: {
+                
+            },
+            ready () {
+                
+            }
+        }
+
+        mvvm = new TinyVue(opts);
+
+        
+    </script>
+</body>
+</html>
