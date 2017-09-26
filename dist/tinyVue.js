@@ -42,7 +42,7 @@
 /************************************************************************/
 /******/ ([
 /* 0 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
@@ -111,11 +111,11 @@
 	
 	window.TinyVue = TinyVue;
 
-/***/ },
+/***/ }),
 /* 1 */,
 /* 2 */,
 /* 3 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
@@ -667,9 +667,9 @@
 	    }
 	}
 
-/***/ },
+/***/ }),
 /* 4 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
@@ -894,9 +894,9 @@
 	
 	exports.default = Binding;
 
-/***/ },
+/***/ }),
 /* 5 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
@@ -913,9 +913,9 @@
 	
 	exports.DirectiveParser = _directiveParser2.default;
 
-/***/ },
+/***/ }),
 /* 6 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
@@ -1018,9 +1018,9 @@
 	exports.default = DirectiveParser;
 	;
 
-/***/ },
+/***/ }),
 /* 7 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
@@ -1103,9 +1103,9 @@
 	    }
 	};
 
-/***/ },
+/***/ }),
 /* 8 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
@@ -1168,9 +1168,9 @@
 	    }
 	};
 
-/***/ },
+/***/ }),
 /* 9 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
@@ -1255,9 +1255,9 @@
 	    }
 	};
 
-/***/ },
+/***/ }),
 /* 10 */
-/***/ function(module, exports) {
+/***/ (function(module, exports) {
 
 	'use strict';
 	
@@ -1268,18 +1268,15 @@
 	    prefix: 'v'
 	};
 
-/***/ },
+/***/ }),
 /* 11 */
-/***/ function(module, exports) {
+/***/ (function(module, exports) {
 
 	'use strict';
 	
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
-	
-	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-	
 	exports.typeOf = typeOf;
 	exports.isObject = isObject;
 	exports.isFunc = isFunc;
@@ -1375,22 +1372,16 @@
 	    child = child || {};
 	
 	    if (isNew) {
-	        var _ret = function () {
-	            var ret = {};
-	            objectEach(child, function (key, value) {
-	                ret[key] = value;
-	            });
+	        var ret = {};
+	        objectEach(child, function (key, value) {
+	            ret[key] = value;
+	        });
 	
-	            objectEach(parent, function (key, value) {
-	                ret[key] = value;
-	            });
+	        objectEach(parent, function (key, value) {
+	            ret[key] = value;
+	        });
 	
-	            return {
-	                v: ret
-	            };
-	        }();
-	
-	        if ((typeof _ret === 'undefined' ? 'undefined' : _typeof(_ret)) === "object") return _ret.v;
+	        return ret;
 	    } else {
 	        objectEach(parent, function (key, value) {
 	            child[key] = value;
@@ -1460,9 +1451,9 @@
 	    }, Timer);
 	}
 
-/***/ },
+/***/ }),
 /* 12 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
@@ -1506,9 +1497,9 @@
 	exports.observer = observer;
 	exports.arrayObserver = arrayObserver;
 
-/***/ },
+/***/ }),
 /* 13 */
-/***/ function(module, exports) {
+/***/ (function(module, exports) {
 
 	'use strict';
 	
@@ -1618,9 +1609,9 @@
 	
 	exports.default = Event;
 
-/***/ },
+/***/ }),
 /* 14 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
@@ -1679,17 +1670,15 @@
 	
 	exports.default = Watcher;
 
-/***/ },
+/***/ }),
 /* 15 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
-	
-	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 	
 	var _main = __webpack_require__(3);
 	
@@ -1740,8 +1729,6 @@
 	        vm.addComponent(componentInstance);
 	    },
 	    propsProcess: function propsProcess() {
-	        var _this = this;
-	
 	        var opts = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 	        var vm = arguments[1];
 	
@@ -1749,71 +1736,63 @@
 	            console.warn('Can not set props for root component.');
 	        }
 	        if (opts.props) {
-	            var _ret = function () {
+	            /**
+	             * 数组声明形式
+	             */
+	            var props = {},
+	                processProps = {},
+	                el = this.el;
+	            if (Array.isArray(opts.props)) {
+	                opts.props.forEach(function (prop) {
+	                    props[prop] = {
+	                        required: false,
+	                        defaultValue: ''
+	                    };
+	                });
+	            } else {
 	                /**
-	                 * 数组声明形式
+	                 * 对象声明形式
 	                 */
-	                var props = {},
-	                    processProps = {},
-	                    el = _this.el;
-	                if (Array.isArray(opts.props)) {
-	                    opts.props.forEach(function (prop) {
-	                        props[prop] = {
-	                            required: false,
-	                            defaultValue: ''
-	                        };
-	                    });
+	                props = opts.props;
+	            }
+	
+	            (0, _utils.map)(el.attributes, function (attribute) {
+	                /**
+	                 * 静态props处理
+	                 */
+	                var name = attribute.name,
+	                    value = attribute.value;
+	
+	                if (props[name]) {
+	                    processProps[name] = value;
 	                } else {
 	                    /**
-	                     * 对象声明形式
+	                     * 动态props
 	                     */
-	                    props = opts.props;
-	                }
+	                    var attr = '';
+	                    if (name[0] === ':') {
+	                        attr = name.substring(1);
+	                        if (props[attr]) {
+	                            processProps[attr] = vm.$parent[value];
 	
-	                (0, _utils.map)(el.attributes, function (attribute) {
-	                    /**
-	                     * 静态props处理
-	                     */
-	                    var name = attribute.name,
-	                        value = attribute.value;
-	
-	                    if (props[name]) {
-	                        processProps[name] = value;
-	                    } else {
-	                        (function () {
 	                            /**
-	                             * 动态props
+	                             * watch change
 	                             */
-	                            var attr = '';
-	                            if (name[0] === ':') {
-	                                attr = name.substring(1);
-	                                if (props[attr]) {
-	                                    processProps[attr] = vm.$parent[value];
-	
-	                                    /**
-	                                     * watch change
-	                                     */
-	                                    vm.$parent.$watch(value, function () {
-	                                        vm[attr] = vm.$parent[value];
-	                                    });
-	                                }
-	                            }
-	                        })();
+	                            vm.$parent.$watch(value, function () {
+	                                vm[attr] = vm.$parent[value];
+	                            });
+	                        }
 	                    }
-	                });
+	                }
+	            });
 	
-	                vm.$props = processProps;
+	            vm.$props = processProps;
 	
-	                return {
-	                    v: processProps
-	                };
-	            }();
-	
-	            if ((typeof _ret === 'undefined' ? 'undefined' : _typeof(_ret)) === "object") return _ret.v;
+	            return processProps;
 	        }
 	    }
 	};
 
-/***/ }
+/***/ })
 /******/ ]);
 //# sourceMappingURL=tinyVue.js.map

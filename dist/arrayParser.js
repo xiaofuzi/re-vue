@@ -42,7 +42,7 @@
 /************************************************************************/
 /******/ ([
 /* 0 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
@@ -238,9 +238,9 @@
 	console.log('getter: ', getExpresion()((0, _state2.default)('obj[info][age]["weight"]')));
 	//console.log('complex: ', complexGetExpression()(ps('person[name][info][obj["name"]]')));
 
-/***/ },
+/***/ }),
 /* 1 */
-/***/ function(module, exports) {
+/***/ (function(module, exports) {
 
 	'use strict';
 	
@@ -465,9 +465,9 @@
 	    };
 	}
 
-/***/ },
+/***/ }),
 /* 2 */
-/***/ function(module, exports) {
+/***/ (function(module, exports) {
 
 	'use strict';
 	
@@ -545,6 +545,6 @@
 	    return new State(str);
 	}
 
-/***/ }
+/***/ })
 /******/ ]);
 //# sourceMappingURL=arrayParser.js.map
