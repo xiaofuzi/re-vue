@@ -5,34 +5,29 @@ let observer = new Event();
 /**
  * Array observer
  */
-let arrProto = Array.prototype;
-let arrayMethods = Object.create(arrProto);
-const mutationMethods = [
-    'pop',
-    'push',
-    'reverse',
-    'shift',
-    'unshift',
-    'splice',
-    'sort'
-];
+let arrProto = Array.prototype,
+    mutationMethods = [
+        'pop',
+        'push',
+        'reverse',
+        'shift',
+        'unshift',
+        'splice',
+        'sort'
+    ];
 
-function arrayObserver (arr, cb) {
+function arrayObserver(arr, cb) {
     mutationMethods.forEach(function (method) {
-        // 原生的数组方法
-        let originalMethod = arrProto[method];
+        arr[method] = function (...rest) {
+            arrProto[method].apply(this, rest);
 
-        arrayMethods[method] = function () {
-            originalMethod.apply(this, arguments);
-
-            cb && cb({
+            cb&&cb({
                 event: method,
-                args: arguments,
+                args: rest,
                 array: arr
             });
         };
     });
-    arr.__proto__ = arrayMethods;
 }
 
 export {
