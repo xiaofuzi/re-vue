@@ -7,7 +7,7 @@ import ComponentParser from './component.js';
 import Config from './config.js';
 const { prefix } = Config;
 
-import { 
+import {
     extend,
     forEach,
     map,
@@ -24,7 +24,7 @@ import {
 
 
 /**
- * Main class 
+ * Main class
  */
 let vmId = 0;
 export default class Main {
@@ -75,7 +75,7 @@ export default class Main {
         this.components = this._opts.components;
 
         let _data = this._bindingData = extend(this._opts.data, this._opts.methods, true);
-        objectEach(_data, (path, item)=>{
+        objectEach(_data, (path, item) => {
             this._initReactive(path, item);
         });
 
@@ -91,7 +91,7 @@ export default class Main {
          * vm响应式数据的初始化
          */
         for (let key in this._bindings) {
-            this.$set(key, objectGet(_data, key));                
+            this.$set(key, objectGet(_data, key));
         }
 
         /**
@@ -140,13 +140,13 @@ export default class Main {
      * 生命周期函数
      */
     beforeCompiler () {
-        if (this._opts.beforeCompiler && typeof this._opts.beforeCompiler == 'function') {
+        if (this._opts.beforeCompiler && typeof this._opts.beforeCompiler === 'function') {
             this._opts.beforeCompiler.call(this);
         }
     }
-     
+
     ready () {
-        if (this._opts.ready && typeof this._opts.ready == 'function') {
+        if (this._opts.ready && typeof this._opts.ready === 'function') {
             this._opts.ready.call(this);
         }
     }
@@ -183,7 +183,7 @@ export default class Main {
         let propsData = ComponentParser.propsProcess(this._opts, this);
         if (propsData) {
             this.$reactive(propsData);
-            
+
             this.$props = propsData;
         }
     }
@@ -331,7 +331,7 @@ export default class Main {
         } else {
             binding.directives.push(directive);
         }
-        
+
         /**
          * 子 vm bingding时更新DOM
          */
@@ -352,7 +352,7 @@ export default class Main {
                 binding.appendTo(parentBinding);
             }
         }
-    } 
+    }
 
     _createBinding (key, ctx) {
         this._bindings[key] = new Binding(ctx||this, key);
@@ -371,11 +371,11 @@ export default class Main {
         if (isObject(value)) {
             binding = this._createBinding(path);
 
-            let bindings = objectMap(value, (key, item)=>{            
+            let bindings = objectMap(value, (key, item)=>{
                 let childBinding = this._initReactive(`${path}.${key}`, item);
                 childBinding.parent = binding;
                 return childBinding;
-            });    
+            });
             binding.children = bindings;
         } else {
             binding = this._createBinding(path);
@@ -446,7 +446,7 @@ function getAttributes (attributes) {
  */
 function getComponent (vm, componentName) {
     let components = getComponents(vm);
-    
+
     if (components) {
         return components[componentName] || Main.components[componentName];
 

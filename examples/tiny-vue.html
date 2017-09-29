@@ -22,7 +22,7 @@
         <h2 v-text='hello' v-visible='isShow'></h2>
         <!---
         <input type="text" v-model='counter'>
-        <button v-on:click='add' type="button">add</button>        
+        <button v-on:click='add' type="button">add</button>
         <button v-on:click='toggle' type="button">toggle</button>
         <p v-text='counter'></p>
         <p v-text='info.age'></p>
@@ -71,9 +71,9 @@
         var opts = {
             el: '#app',
             data: {
-                // isShow: true,
+                isShow: true,
                 // counter: 1,
-                 hello: 'ahahah!',
+                hello: 'ahahah!',
                 // info: {
                 //     age: 18
                 // },
@@ -117,7 +117,7 @@
                     this.info.age += 1;
                 },
                 toggle: function () {
-                    this.isShow = !this.isShow;                    
+                    this.isShow = !this.isShow;
                 }
             },
             watch: {
